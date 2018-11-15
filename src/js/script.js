@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import Sea from './classes/Sea.js';
-import GLTFLoader from 'three-gltf-loader';
-const loader = new GLTFLoader();
+//import GLTFLoader from 'three-gltf-loader';
+import Bird from './classes/Bird.js';
+//const loader = new GLTFLoader();
 
 {
 
@@ -9,7 +10,7 @@ const loader = new GLTFLoader();
     WIDTH, HEIGHT,
     camera, fieldOfView, aspectRatio, nearPlane, farPlane, renderer, container;
 
-  let sea;
+  let sea, bird;
   let hemisphereLight, shadowLight, ambientLight;
 
   const init = () => {
@@ -19,7 +20,7 @@ const loader = new GLTFLoader();
     createSea();
     createBird();
 
-        //start de render loop
+    //start de render loop
     loop();
   };
 
@@ -52,19 +53,29 @@ const loader = new GLTFLoader();
     scene.add(ambientLight);
   };
   const createBird = () => {
-    loader.load(`./assets/untitled.glb`, gltf => {
+    // loader.load(`./assets/birb.glb`, gltf => {
 
+    //   console.log(gltf.animations);
 
-      gltf.scene.scale.set(4, 4, 4);
-      gltf.scene.rotation.copy(new THREE.Euler(0, - 3 * Math.PI / 6, 0));
-      gltf.scene.position.set(200, 100, 0);
+    //   mixer = new THREE.AnimationMixer(gltf.scene);
+    //   mixer.clipAction(gltf.animations[1]).play();
 
-      scene.add(gltf.scene);
-    });
+    //   gltf.scene.scale.set(4, 4, 4);
+    //   gltf.scene.rotation.copy(new THREE.Euler(0, - 3 * Math.PI / 6, 0));
+    //   gltf.scene.position.set(200, 100, 0);
+
+    //   scene.add(gltf.scene);
+    // });
+
+    bird = new Bird(scene);
+
+    console.log(bird);
   };
 
   const createSea = () => {
     sea = new Sea();
+
+    console.log(sea);
 
     sea.mesh.position.y = - 600;
 
@@ -107,18 +118,27 @@ const loader = new GLTFLoader();
       antialias: true
     });
 
+    window.addEventListener(`resize`, onWindowResize, false);
+
     renderer.setSize(WIDTH, HEIGHT);
     renderer.shadowMap.eneabled = true;
 
-    container = document.getElementById(`world`);
-    container.appendChild(renderer.domElement);
+    container = document.getElementsByClassName(`world`);
+    container[0].appendChild(renderer.domElement);
+  };
+
+  const onWindowResize = () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
   const loop = () => {
     requestAnimationFrame(loop);
 
     renderer.render(scene, camera);
-
+    //mixer.update(0.01);
     sea.moveWaves();
   };
 
