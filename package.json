@@ -42,6 +42,7 @@
     "webpack-dev-server": "^2.4.1"
   },
   "dependencies": {
-    "three": "^0.98.0"
+    "three": "^0.98.0",
+    "three-gltf-loader": "^1.98.0"
   }
 }
