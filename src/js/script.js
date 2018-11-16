@@ -56,7 +56,7 @@ import Bird from './classes/Bird.js';
   const createBird = () => {
     bird = new Bird(pose, scene);
 
-    // bird.poses(1, scene);   
+    // bird.poses(1, scene);
     //console.log(bird);
     //bird.changePose(2, scene);
   };
@@ -77,6 +77,14 @@ import Bird from './classes/Bird.js';
       break;
     case 40:
       console.log(`down`);
+      break;
+    case 65:
+      console.log(`a`);
+      bird.moveLeft();
+      break;
+    case 68:
+      console.log(`d`);
+      bird.moveRight();
       break;
     }
   };
