@@ -53,22 +53,9 @@ import Bird from './classes/Bird.js';
     scene.add(ambientLight);
   };
   const createBird = () => {
-    // loader.load(`./assets/birb.glb`, gltf => {
+    bird = new Bird(2, scene);
 
-    //   console.log(gltf.animations);
-
-    //   mixer = new THREE.AnimationMixer(gltf.scene);
-    //   mixer.clipAction(gltf.animations[1]).play();
-
-    //   gltf.scene.scale.set(4, 4, 4);
-    //   gltf.scene.rotation.copy(new THREE.Euler(0, - 3 * Math.PI / 6, 0));
-    //   gltf.scene.position.set(200, 100, 0);
-
-    //   scene.add(gltf.scene);
-    // });
-
-    bird = new Bird(scene);
-
+    // bird.poses(1, scene);   
     console.log(bird);
   };
 
@@ -140,6 +127,7 @@ import Bird from './classes/Bird.js';
     renderer.render(scene, camera);
     //mixer.update(0.01);
     sea.moveWaves();
+    bird.animate();
   };
 
   init();
