@@ -11,6 +11,7 @@ import Bird from './classes/Bird.js';
     camera, fieldOfView, aspectRatio, nearPlane, farPlane, renderer, container;
 
   let sea, bird;
+  const pose = 1;
   let hemisphereLight, shadowLight, ambientLight;
 
   const init = () => {
@@ -53,10 +54,31 @@ import Bird from './classes/Bird.js';
     scene.add(ambientLight);
   };
   const createBird = () => {
-    bird = new Bird(2, scene);
+    bird = new Bird(pose, scene);
 
     // bird.poses(1, scene);   
-    console.log(bird);
+    //console.log(bird);
+    //bird.changePose(2, scene);
+  };
+
+  document.onkeydown = function(e) {
+    switch (e.keyCode) {
+    case 37:
+      console.log(`left`);
+      bird.changePose(0, scene);
+      break;
+    case 38:
+      console.log(`up`);
+      bird.changePose(1, scene);
+      break;
+    case 39:
+      console.log(`right`);
+      bird.changePose(2, scene);
+      break;
+    case 40:
+      console.log(`down`);
+      break;
+    }
   };
 
   const createSea = () => {
