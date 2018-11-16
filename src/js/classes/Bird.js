@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import GLTFLoader from 'three-gltf-loader';
 
-let mixer, gltfGlobal;
+let mixer, gltfGlobal, animation, idle;
+//let playing = false;
 
 class Bird {
 
@@ -19,9 +20,8 @@ class Bird {
       //scene.add(gltf.scene);
 
       gltfGlobal = gltf;
-      console.log(test);
-
       this.poses(pose, scene, gltf);
+      console.log(pose);
 
     });
 
@@ -29,17 +29,26 @@ class Bird {
   }
 
   poses(pose, scene, gltf) {
-    console.log(gltf);
+    console.log(pose);
     scene.add(gltf.scene);
     
     mixer = new THREE.AnimationMixer(gltf.scene);
-    mixer.clipAction(gltf.animations[pose]).play();
+
+    animation = mixer.clipAction(gltf.animations[pose]);
+    animation.play();
+
 
   }
 
   changePose(pose, scene) {
-    console.log(pose, scene, gltfGlobal);
+    //console.log(pose, scene, gltfGlobal);
     this.poses(pose, scene, gltfGlobal);
+    animation.setLoop(THREE.LoopOnce);
+
+    idle = mixer.clipAction(gltfGlobal.animations[1]);
+    animation.crossFadeTo(idle.play(), 3);
+
+
   }
 
   animate() {
