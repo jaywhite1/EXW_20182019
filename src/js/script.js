@@ -21,6 +21,8 @@ import Bird from './classes/Bird.js';
     createSea();
     createBird();
 
+    checkKeys();
+
     //start de render loop
     loop();
   };
@@ -61,32 +63,34 @@ import Bird from './classes/Bird.js';
     //bird.changePose(2, scene);
   };
 
-  document.onkeydown = function(e) {
-    switch (e.keyCode) {
-    case 37:
-      console.log(`left`);
-      bird.changePose(0, scene);
-      break;
-    case 38:
-      console.log(`up`);
-      bird.changePose(1, scene);
-      break;
-    case 39:
-      console.log(`right`);
-      bird.changePose(2, scene);
-      break;
-    case 40:
-      console.log(`down`);
-      break;
-    case 65:
-      console.log(`a`);
-      bird.moveLeft();
-      break;
-    case 68:
-      console.log(`d`);
-      bird.moveRight();
-      break;
-    }
+  const checkKeys = () => {
+    document.onkeydown = e => {
+      switch (e.keyCode) {
+      case 37:
+        console.log(`left`);
+        bird.changePose(0, scene);
+        break;
+      case 38:
+        console.log(`up`);
+        bird.changePose(1, scene);
+        break;
+      case 39:
+        console.log(`right`);
+        bird.changePose(2, scene);
+        break;
+      case 40:
+        console.log(`down`);
+        break;
+      case 65:
+        console.log(`a`);
+        bird.moveLeft();
+        break;
+      case 68:
+        console.log(`d`);
+        bird.moveRight();
+        break;
+      }
+    };
   };
 
   const createSea = () => {
@@ -158,6 +162,7 @@ import Bird from './classes/Bird.js';
     //mixer.update(0.01);
     sea.moveWaves();
     bird.animate();
+    
   };
 
   init();

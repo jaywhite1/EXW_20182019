@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import GLTFLoader from 'three-gltf-loader';
 
-let mixer, gltfGlobal;
+let mixer, gltfGlobal, animation, idle;
+let currentAnimation = 1;
+//let playing = false;
 
 class Bird {
 
@@ -19,39 +21,56 @@ class Bird {
       //scene.add(gltf.scene);
 
       gltfGlobal = gltf;
-
       this.poses(pose, scene, gltf);
+      console.log(pose);
 
     });
 
-
+    
   }
 
   poses(pose, scene, gltf) {
-    console.log(gltf);
+    console.log(pose);
     scene.add(gltf.scene);
-
+    
     mixer = new THREE.AnimationMixer(gltf.scene);
-    mixer.clipAction(gltf.animations[pose]).setLoop(THREE.LoopOnce, 0);
-    mixer.clipAction(gltf.animations[pose]).play();
 
-    mixer.clipAction(gltf.animations[pose]).crossFadeTo(mixer.clipAction(gltf.animations[1]).play(), 2.5);
+    animation = mixer.clipAction(gltf.animations[pose]);
+    animation.play();
+
+
   }
 
   changePose(pose, scene) {
-    console.log(pose, scene, gltfGlobal);
+    //console.log(pose, scene, gltfGlobal);
+    currentAnimation = pose;
     this.poses(pose, scene, gltfGlobal);
+    animation.setLoop(THREE.LoopOnce);
+    console.log(currentAnimation);
+
+    idle = mixer.clipAction(gltfGlobal.animations[1]);
+    animation.crossFadeTo(idle.play(), 5);
+    
+
+    setTimeout(() => {
+      currentAnimation = 1;
+    }, 400);
+    
+    console.log(currentAnimation);
+
   }
 
   animate() {
-    mixer.update(0.01);
+    if (currentAnimation === 1) {
+      mixer.update(0.02);
+    } else if (currentAnimation === 0) {
+      mixer.update(0.05);
+    } else if (currentAnimation === 2) {
+      mixer.update(0.05);
+    }
   }
-  moveLeft() {
-    gltfGlobal.scene.rotation.x += 1;
-  }
-  moveRight() {
-    gltfGlobal.scene.rotation.copy(new THREE.Euler(0, - 3 * Math.PI / 6, 0.3));
-  }
+  
+
 }
 
 export default Bird;
