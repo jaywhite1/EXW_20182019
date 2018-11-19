@@ -74,4 +74,15 @@ h1 {
   height: 100%;
   overflow: hidden;
   background: linear-gradient(#e4e0ba, #f7d9aa);
+  z-index: 0;
+}
+
+.logo {
+  padding-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  position: absolute;
+  z-index: 1;
 }
