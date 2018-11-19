@@ -10,6 +10,17 @@ import Bird from './classes/Bird.js';
     WIDTH, HEIGHT,
     camera, fieldOfView, aspectRatio, nearPlane, farPlane, renderer, container;
 
+    //load audio, best wel nog aparte klasse voor maken
+  const audioListener = new THREE.AudioListener();
+  const themeSound = new THREE.Audio(audioListener);
+  const audioLoader = new THREE.AudioLoader();
+  audioLoader.load(`./assets/flex.mp3`, function(buffer) {
+    themeSound.setBuffer(buffer);
+    themeSound.setLoop(true);
+    themeSound.setVolume(0.2);
+    themeSound.play();
+  });
+
   let sea, bird;
   const pose = 1;
   let hemisphereLight, shadowLight, ambientLight;
@@ -162,7 +173,7 @@ import Bird from './classes/Bird.js';
     //mixer.update(0.01);
     sea.moveWaves();
     bird.animate();
-    
+
   };
 
   init();
