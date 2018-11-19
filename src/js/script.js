@@ -5,11 +5,11 @@ import Bird from './classes/Bird.js';
 //const loader = new GLTFLoader();
 
 {
-
   let scene,
     WIDTH, HEIGHT,
     camera, fieldOfView, aspectRatio, nearPlane, farPlane, renderer, container;
-
+  const spd = 10;
+  const input = {left: 0, right: 0, up: 0, down: 0};
     //load audio, best wel nog aparte klasse voor maken
   const audioListener = new THREE.AudioListener();
   const themeSound = new THREE.Audio(audioListener);
@@ -32,11 +32,59 @@ import Bird from './classes/Bird.js';
     createSea();
     createBird();
 
-    checkKeys();
-
     //start de render loop
     loop();
   };
+  window.addEventListener(`keyup`, function(e) {
+    switch (e.keyCode) {
+    case 68:
+      input.right = 0;
+      break;
+    case 65:
+      input.left = 0;
+      break;
+    case 87:
+      input.up = 0;
+      break;
+    case 83:
+      input.down = 0;
+      break;
+
+    }
+
+  });
+
+  window.addEventListener(`keydown`, function(e) {
+    switch (e.keyCode) {
+    case 68:
+      input.right = 1;
+      break;
+    case 65:
+      input.left = 1;
+      break;
+    case 87:
+      input.up = 1;
+      break;
+    case 83:
+      input.down = 1;
+      break;
+    case 37:
+      console.log(`left`);
+      bird.changePose(0, camera);
+      break;
+    case 38:
+      console.log(`up`);
+      bird.changePose(1, camera);
+      break;
+    case 39:
+      console.log(`right`);
+      bird.changePose(2, camera);
+      break;
+    case 40:
+      console.log(`down`);
+      break;
+    }
+  });
 
   const createLights = () => {
     hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, .9);
@@ -67,41 +115,11 @@ import Bird from './classes/Bird.js';
     scene.add(ambientLight);
   };
   const createBird = () => {
-    bird = new Bird(pose, scene);
+    bird = new Bird(pose, camera);
 
     // bird.poses(1, scene);
     //console.log(bird);
     //bird.changePose(2, scene);
-  };
-
-  const checkKeys = () => {
-    document.onkeydown = e => {
-      switch (e.keyCode) {
-      case 37:
-        console.log(`left`);
-        bird.changePose(0, scene);
-        break;
-      case 38:
-        console.log(`up`);
-        bird.changePose(1, scene);
-        break;
-      case 39:
-        console.log(`right`);
-        bird.changePose(2, scene);
-        break;
-      case 40:
-        console.log(`down`);
-        break;
-      case 65:
-        console.log(`a`);
-        bird.moveLeft();
-        break;
-      case 68:
-        console.log(`d`);
-        bird.moveRight();
-        break;
-      }
-    };
   };
 
   const createSea = () => {
@@ -142,7 +160,7 @@ import Bird from './classes/Bird.js';
     camera.position.z = 0; // l,r
     camera.position.y = 300; //hoogte
     camera.rotation.y = 90 * Math.PI / 180;
-
+    scene.add(camera);
         //create renderer
     renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -165,11 +183,33 @@ import Bird from './classes/Bird.js';
 
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
+  const movePlayer = () => {
+
+    if (input.up === 1) {
+      if (camera.position.z === - 570) {
+        camera.position.z = - 570;
+      } else {
+        camera.position.z -= Math.cos(camera.rotation.y) * spd;
+        camera.position.z -= Math.sin(camera.rotation.y) * spd;
+      }
+
+    }
+    if (input.down === 1) {
+      if (camera.position.z === 570) {
+        camera.position.z = 570;
+      } else {
+        camera.position.z += Math.cos(camera.rotation.y) * spd;
+        camera.position.z += Math.sin(camera.rotation.y) * spd;
+      }
+
+
+    }
+  };
 
   const loop = () => {
     requestAnimationFrame(loop);
-
     renderer.render(scene, camera);
+    movePlayer();
     //mixer.update(0.01);
     sea.moveWaves();
     bird.animate();
