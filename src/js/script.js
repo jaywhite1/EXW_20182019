@@ -37,9 +37,6 @@ import Bird from './classes/Bird.js';
   };
   window.addEventListener(`keyup`, function(e) {
     switch (e.keyCode) {
-    case 68:
-      input.right = 0;
-      break;
     case 65:
       input.left = 0;
       break;
@@ -49,16 +46,14 @@ import Bird from './classes/Bird.js';
     case 83:
       input.down = 0;
       break;
-
+    case 39:
+      input.right = 0;
+      break;
     }
-
   });
 
   window.addEventListener(`keydown`, function(e) {
     switch (e.keyCode) {
-    case 68:
-      input.right = 1;
-      break;
     case 65:
       input.left = 1;
       break;
@@ -79,6 +74,7 @@ import Bird from './classes/Bird.js';
     case 39:
       console.log(`right`);
       bird.changePose(2, camera);
+      input.right = 1;
       break;
     case 40:
       console.log(`down`);
@@ -184,7 +180,8 @@ import Bird from './classes/Bird.js';
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
   const movePlayer = () => {
-
+    camera.position.y -= Math.cos(camera.rotation.y) * spd / 20;
+    camera.position.y -= Math.sin(camera.rotation.y) * spd / 20;
     if (input.up === 1) {
       if (camera.position.z === - 570) {
         camera.position.z = - 570;
@@ -201,8 +198,10 @@ import Bird from './classes/Bird.js';
         camera.position.z += Math.cos(camera.rotation.y) * spd;
         camera.position.z += Math.sin(camera.rotation.y) * spd;
       }
-
-
+    }
+    if (input.right === 1) {
+      camera.position.y += Math.cos(camera.rotation.y) * spd / 5;
+      camera.position.y += Math.sin(camera.rotation.y) * spd / 5;
     }
   };
 
