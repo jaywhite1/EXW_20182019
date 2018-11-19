@@ -183,8 +183,6 @@ import 'babel-polyfill';
 
     const detect = async () => {
 
-      requestAnimationFrame(detect);
-
     // Load posenet
       net = await posenet.load(0.5);
 
@@ -242,6 +240,7 @@ import 'babel-polyfill';
 
       
       poseRenderer.render(poseScene, poseCamera);
+      requestAnimationFrame(detect);
       
     };
 
