@@ -3,7 +3,6 @@ import * as posenet from '@tensorflow-models/posenet';
 import Sea from './classes/Sea.js';
 import Bird from './classes/Bird.js';
 import 'babel-polyfill';
-//import * as posenet from '@tensorflow-models/posenet';
 
 {
 
@@ -15,7 +14,7 @@ import 'babel-polyfill';
   const pose = 1;
   let hemisphereLight, shadowLight, ambientLight;
 
-  let poseScene, poseCamera, poseLight, poseRenderer, poseGroup, poseContainer, video;
+  let poseScene, poseCamera, poseLight, poseRenderer, poseGroup, poseContainer, video, net;
   const trackers = [];
 
   // const imageScaleFactor = 0.5;
@@ -43,7 +42,6 @@ import 'babel-polyfill';
     navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
     createPoseScene();
-    bindPage();
 
     createScene();
     createLights();
@@ -52,6 +50,8 @@ import 'babel-polyfill';
 
     createTrackers();
     checkKeys();
+
+    bindPage();
 
     //start de render loop
     loop();
@@ -134,6 +134,40 @@ import 'babel-polyfill';
     }
   }
 
+  const createPoseScene = () => {
+    const width = 250;
+    const height = 250;
+
+    // Setup scene
+    poseScene = new THREE.Scene();
+
+    //  We use an orthographic camera here instead of persepctive one for easy mapping
+    //  Bounded from 0 to width and 0 to height
+    // Near clipping plane of 0.1; far clipping plane of 1000
+    poseCamera = new THREE.OrthographicCamera(0, width, 0, height, 0.1, 1000);
+    poseCamera.position.z = 500;
+
+    // Setting up the renderer
+    poseRenderer = new THREE.WebGLRenderer({antialias: true});
+    poseRenderer.setPixelRatio(window.devicePixelRatio);
+    poseRenderer.setSize(width, height);
+    poseRenderer.setClearColor(0xDE3C4B, 1);
+
+    // Attach the threejs animation to the div with id of threeContainer
+
+    poseContainer = document.getElementsByClassName(`posetest`);
+    poseContainer[0].appendChild(poseRenderer.domElement);
+
+    // Scene lighting
+    poseLight = new THREE.HemisphereLight(`#EFF6EE`, `#EFF6EE`, 0);
+    poseLight.position.set(0, 0, 0);
+    poseScene.add(poseLight);
+
+    poseGroup = new THREE.Group();
+
+    poseScene.add(poseGroup);
+  };
+
   const renderPose = (video, net) => {
     const width = 250;
     const height = 250;
@@ -147,7 +181,9 @@ import 'babel-polyfill';
     canvas.width = width;
     canvas.height = height;
 
-    async function detect() {
+    const detect = async () => {
+
+      requestAnimationFrame(detect);
 
     // Load posenet
       net = await posenet.load(0.5);
@@ -204,45 +240,12 @@ import 'babel-polyfill';
         }
       });
 
-      poseRenderer.renderPose(poseScene, poseCamera);
-      requestAnimationFrame(detect);
-    }
+      
+      poseRenderer.render(poseScene, poseCamera);
+      
+    };
 
     detect();
-  };
-
-  const createPoseScene = () => {
-    const width = 250;
-    const height = 250;
-
-    // Setup scene
-    poseScene = new THREE.Scene();
-
-    //  We use an orthographic camera here instead of persepctive one for easy mapping
-    //  Bounded from 0 to width and 0 to height
-    // Near clipping plane of 0.1; far clipping plane of 1000
-    poseCamera = new THREE.OrthographicCamera(0, width, 0, height, 0.1, 1000);
-    poseCamera.position.z = 500;
-
-    // Setting up the renderer
-    poseRenderer = new THREE.WebGLRenderer({antialias: true});
-    poseRenderer.setPixelRatio(window.devicePixelRatio);
-    poseRenderer.setSize(width, height);
-    poseRenderer.setClearColor(0xDE3C4B, 1);
-
-    // Attach the threejs animation to the div with id of threeContainer
-
-    poseContainer = document.getElementsByClassName(`posetest`);
-    poseContainer[0].appendChild(poseRenderer.domElement);
-
-    // Scene lighting
-    poseLight = new THREE.HemisphereLight(`#EFF6EE`, `#EFF6EE`, 0);
-    poseLight.position.set(0, 0, 0);
-    poseScene.add(poseLight);
-
-    poseGroup = new THREE.Group();
-
-    poseScene.add(poseGroup);
   };
 
   const createTrackers = () => {
@@ -293,7 +296,7 @@ import 'babel-polyfill';
   const bindPage = async () => {
 
     // // Load posenet
-    const net = await posenet.load(0.75);
+    net = await posenet.load(0.75);
 
     document.getElementsByClassName(`posetest`)[0].style.display = `block`;
 
@@ -406,6 +409,9 @@ import 'babel-polyfill';
     bird.animate();
 
     // poseRenderer.renderPose(scene, camera);
+
+
+    //renderPose(video, net);
 
   };
 
