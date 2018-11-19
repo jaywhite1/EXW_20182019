@@ -4,6 +4,8 @@ import Sea from './classes/Sea.js';
 import Bird from './classes/Bird.js';
 import 'babel-polyfill';
 
+import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
+
 {
 
   let scene,
@@ -14,12 +16,7 @@ import 'babel-polyfill';
   const pose = 1;
   let hemisphereLight, shadowLight, ambientLight;
 
-  let poseScene, poseCamera, poseLight, poseRenderer, poseGroup, poseContainer, video, net;
-  const trackers = [];
-
-  // const imageScaleFactor = 0.5;
-  // const outputStride = 16;
-  // const flipHorizontal = false;
+  let video, net;
 
   const videoWidth = 600;
   const videoHeight = 500;
@@ -32,7 +29,7 @@ import 'babel-polyfill';
     themeSound.setBuffer(buffer);
     themeSound.setLoop(true);
     themeSound.setVolume(0.2);
-    themeSound.play();
+    //themeSound.play();
   });
 
 
@@ -41,14 +38,11 @@ import 'babel-polyfill';
     navigator.getUserMedia = navigator.getUserMedia ||
     navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
-    createPoseScene();
-
     createScene();
     createLights();
     createSea();
     createBird();
 
-    createTrackers();
     checkKeys();
 
     bindPage();
@@ -95,166 +89,6 @@ import 'babel-polyfill';
 
     container = document.getElementsByClassName(`world`);
     container[0].appendChild(renderer.domElement);
-  };
-
-  class Tracker {
-    constructor() {
-      this.position = new THREE.Vector3();
-
-      const geometry = new THREE.SphereGeometry(10, 7, 7);
-      const material = new THREE.MeshToonMaterial({color: 0xEFF6EE, 
-        opacity: 0.5, 
-        transparent: true, 
-        wireframe: true, 
-        emissive: 0xEFF6EE,
-        emissiveIntensity: 1});
-
-      const sphere = new THREE.Mesh(geometry, material);
-      poseGroup.add(sphere);
-
-      this.initialise = function() {
-        this.position.x = - 10;
-        this.position.y = - 10;
-        this.position.z = 0;
-      };
-
-      this.update = function(x, y, z) {
-        this.position.x = x;
-        this.position.y = y;
-        this.position.z = z;
-      };
-
-      this.display = function() {
-        sphere.position.x = this.position.x;
-        sphere.position.y = this.position.y;
-        sphere.position.z = this.position.z;
-
-      // console.log(sphere.position);
-      };
-    }
-  }
-
-  const createPoseScene = () => {
-    const width = 250;
-    const height = 250;
-
-    // Setup scene
-    poseScene = new THREE.Scene();
-
-    //  We use an orthographic camera here instead of persepctive one for easy mapping
-    //  Bounded from 0 to width and 0 to height
-    // Near clipping plane of 0.1; far clipping plane of 1000
-    poseCamera = new THREE.OrthographicCamera(0, width, 0, height, 0.1, 1000);
-    poseCamera.position.z = 500;
-
-    // Setting up the renderer
-    poseRenderer = new THREE.WebGLRenderer({antialias: true});
-    poseRenderer.setPixelRatio(window.devicePixelRatio);
-    poseRenderer.setSize(width, height);
-    poseRenderer.setClearColor(0xDE3C4B, 1);
-
-    // Attach the threejs animation to the div with id of threeContainer
-
-    poseContainer = document.getElementsByClassName(`posetest`);
-    poseContainer[0].appendChild(poseRenderer.domElement);
-
-    // Scene lighting
-    poseLight = new THREE.HemisphereLight(`#EFF6EE`, `#EFF6EE`, 0);
-    poseLight.position.set(0, 0, 0);
-    poseScene.add(poseLight);
-
-    poseGroup = new THREE.Group();
-
-    poseScene.add(poseGroup);
-  };
-
-  const renderPose = (video, net) => {
-    const width = 250;
-    const height = 250;
-
-    const canvas = document.getElementById(`output`);
-    const ctx = canvas.getContext(`2d`);
-
-  // Flip the webcam image to get it right
-    const flipHorizontal = true;
-
-    canvas.width = width;
-    canvas.height = height;
-
-    const detect = async () => {
-
-    // Load posenet
-      net = await posenet.load(0.5);
-
-    // Scale the image. The smaller the faster
-      const imageScaleFactor = 0.75;
-
-    // Stride, the larger, the smaller the output, the faster
-      const outputStride = 32;
-
-    // Store all the poses
-      const poses = [];
-
-      const pose = await net.estimateSinglePose(video, 
-                                              imageScaleFactor, 
-                                              flipHorizontal, 
-                                              outputStride);
-      poses.push(pose);
-
-    // Show a pose (i.e. a person) only if probability more than 0.1
-      const minPoseConfidence = 0.1;
-    // Show a body part only if probability more than 0.3
-      const minPartConfidence = 0.3;
-
-      ctx.clearRect(0, 0, width, height);
-
-      const showVideo = true;
-
-      if (showVideo) {
-        ctx.save();
-        ctx.scale(- 1, 1);
-        ctx.translate(- width, 0);
-      // ctx.filter = 'blur(5px)';
-        ctx.filter = `opacity(50%) blur(3px) grayscale(100%)`;
-        ctx.drawImage(video, 0, 0, width, height);
-        ctx.restore();
-      }
-
-      poses.forEach(({score, keypoints}) => {
-        if (score >= minPoseConfidence) {
-          keypoints.forEach((d, i) => {
-            if (d.score > minPartConfidence) {
-          // console.log(d.part);
-          // Positions need some scaling
-              trackers[i].update(d.position.x * 0.5, d.position.y * 0.5 - height / 4, 0);
-              trackers[i].display();
-            }
-          // Move out of screen if body part not detected
-            else if (d.score < minPartConfidence) {
-              trackers[i].update(- 10, - 10, 0);
-              trackers[i].display();
-            }
-          });
-        }
-      });
-
-      
-      poseRenderer.render(poseScene, poseCamera);
-      requestAnimationFrame(detect);
-      
-    };
-
-    detect();
-  };
-
-  const createTrackers = () => {
-    for (let i = 0;i < 17;i ++) {
-      const tracker = new Tracker();
-      tracker.initialise();
-      tracker.display();
-    
-      trackers.push(tracker);
-    }
   };
 
   const setupCamera = async () => {
@@ -310,8 +144,70 @@ import 'babel-polyfill';
       throw e;
     }
 
-    renderPose(video, net);
+    detectPoseInRealTime(video, net);
     
+  };
+
+  const detectPoseInRealTime = (video, net) => {
+    const canvas = document.getElementById(`output`);
+    const ctx = canvas.getContext(`2d`);
+    // since images are being fed from a webcam
+    const flipHorizontal = true;
+  
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
+  
+    async function poseDetectionFrame() {
+
+      // Load posenet
+      net = await posenet.load(0.5);
+
+      // Scale the image. The smaller the faster
+      const imageScaleFactor = 0.75;
+
+      // Stride, the larger, the smaller the output, the faster
+      const outputStride = 32;
+  
+      const poses = [];
+
+      const pose = await net.estimateSinglePose(video, 
+        imageScaleFactor, 
+        flipHorizontal, 
+        outputStride);
+      poses.push(pose);
+
+      // Show a pose (i.e. a person) only if probability more than 0.1
+      const minPoseConfidence = 0.1;
+      // Show a body part only if probability more than 0.3
+      const minPartConfidence = 0.5;
+  
+      ctx.clearRect(0, 0, videoWidth, videoHeight);
+
+      const showVideo = true;
+  
+      if (showVideo) {
+        ctx.save();
+        ctx.scale(- 1, 1);
+        ctx.translate(- videoWidth, 0);
+        ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
+        ctx.restore();
+      }
+  
+      // For each pose (i.e. person) detected in an image, loop through the poses
+      // and draw the resulting skeleton and keypoints if over certain confidence
+      // scores
+      poses.forEach(({score, keypoints}) => {
+        if (score >= minPoseConfidence) {
+          drawKeypoints(keypoints, minPartConfidence, ctx);
+          drawSkeleton(keypoints, minPartConfidence, ctx);
+          drawBoundingBox(keypoints, ctx);
+        }
+      });
+  
+      requestAnimationFrame(poseDetectionFrame);
+    }
+  
+    poseDetectionFrame();
   };
   
 
@@ -406,11 +302,6 @@ import 'babel-polyfill';
     //mixer.update(0.01);
     sea.moveWaves();
     bird.animate();
-
-    // poseRenderer.renderPose(scene, camera);
-
-
-    //renderPose(video, net);
 
   };
 
