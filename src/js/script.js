@@ -15,7 +15,7 @@ import 'babel-polyfill';
   const pose = 1;
   let hemisphereLight, shadowLight, ambientLight;
 
-  let poseScene, poseCamera, poseLight, poseRenderer, poseGroup, poseContainer;
+  let poseScene, poseCamera, poseLight, poseRenderer, poseGroup, poseContainer, video;
   const trackers = [];
 
   // const imageScaleFactor = 0.5;
@@ -204,7 +204,7 @@ import 'babel-polyfill';
         }
       });
 
-      renderer.render(scene, camera);
+      poseRenderer.renderPose(poseScene, poseCamera);
       requestAnimationFrame(detect);
     }
 
@@ -264,6 +264,7 @@ import 'babel-polyfill';
     const video = document.getElementById(`video`);
     video.width = videoWidth;
     video.height = videoHeight;
+    console.log(video.width, video.height);
   
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: false,
@@ -291,12 +292,10 @@ import 'babel-polyfill';
 
   const bindPage = async () => {
 
-    // Load posenet
+    // // Load posenet
     const net = await posenet.load(0.75);
 
     document.getElementsByClassName(`posetest`)[0].style.display = `block`;
-
-    let video;
 
     try {
       video = await loadVideo();
@@ -405,6 +404,8 @@ import 'babel-polyfill';
     //mixer.update(0.01);
     sea.moveWaves();
     bird.animate();
+
+    // poseRenderer.renderPose(scene, camera);
 
   };
 
