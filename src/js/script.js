@@ -18,8 +18,8 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
   let video, net;
 
-  const videoWidth = 600;
-  const videoHeight = 500;
+  const videoWidth = 450;
+  const videoHeight = 300;
 
     //load audio, best wel nog aparte klasse voor maken
   const audioListener = new THREE.AudioListener();
@@ -100,8 +100,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     const video = document.getElementById(`video`);
     video.width = videoWidth;
     video.height = videoHeight;
-    console.log(video.width, video.height);
-  
+
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
@@ -109,7 +108,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
         height: videoHeight,
       },
     });
-    console.log(stream);
+
     video.srcObject = stream;
   
     return new Promise(resolve => {
@@ -163,10 +162,10 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
       net = await posenet.load(0.5);
 
       // Scale the image. The smaller the faster
-      const imageScaleFactor = 0.75;
+      const imageScaleFactor = 0.55;
 
       // Stride, the larger, the smaller the output, the faster
-      const outputStride = 32;
+      const outputStride = 16;
   
       const poses = [];
 
@@ -175,6 +174,8 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
         flipHorizontal, 
         outputStride);
       poses.push(pose);
+
+      //console.log(pose);
 
       // Show a pose (i.e. a person) only if probability more than 0.1
       const minPoseConfidence = 0.1;
