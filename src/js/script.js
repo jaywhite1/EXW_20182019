@@ -6,7 +6,7 @@ import Bird from './classes/Bird.js';
 {
   let scene,
     WIDTH, HEIGHT,
-    camera, fieldOfView, ground1, ground2, r, particles1, particles2, speed, clock, delta, aspectRatio, nearPlane, farPlane, renderer, container;
+    camera, fieldOfView, ground1, ground2, particles1, particles2, speed, clock, delta, aspectRatio, nearPlane, farPlane, renderer, container;
   const spd = 10;
   const input = {left: 0, right: 0, up: 0, down: 0};
     //load audio, best wel nog aparte klasse voor maken
@@ -139,9 +139,9 @@ import Bird from './classes/Bird.js';
             farPlane
         );
 
-    camera.position.x = 700; //verte?
+    camera.position.x = 100; //verte?
     camera.position.z = 0; // l,r
-    camera.position.y = 100; //hoogte
+    camera.position.y = - 300; //hoogte
     scene.add(camera);
         //create renderer
     renderer = new THREE.WebGLRenderer({
@@ -168,18 +168,18 @@ import Bird from './classes/Bird.js';
   };
   const run = () => {
     speed = delta * 700;
-    r += delta / 2;
-    particles1.position.x = 80 * Math.cos(r * 2);
-    particles1.position.y = Math.sin(r * 2) + 100;
-
-    particles2.position.x = 80 * Math.cos(r * 2);
-    particles2.position.y = Math.sin(r * 2) + 100;
+    //particles1.position.x = 80 * Math.cos(r * 2);
+    //particles1.position.y = Math.sin(r * 2) + 100;
+    particles1.position.x = 0;
+    particles1.position.y = 200;
+    particles2.position.x = 0;
+    particles2.position.y = 200;
     // respawn particles if necessary
 
     particles1.position.z += speed;
     particles2.position.z += speed;
-    if (particles1.position.z - 1500 > camera.position.z) particles1.position.z -= 6000;
-    if (particles2.position.z - 1500 > camera.position.z) particles2.position.z -= 6000;
+    if (particles1.position.z - 100 > camera.position.z) particles1.position.z -= 3000;
+    if (particles2.position.z - 100 > camera.position.z) particles2.position.z -= 3000;
     // respawn ground if necessary
 
     ground1.position.z += speed;
@@ -219,7 +219,7 @@ import Bird from './classes/Bird.js';
 
     // ground 1
 
-    ground1 = new THREE.Mesh(plane, new THREE.MeshBasicMaterial({color: 0x060606}));
+    ground1 = new THREE.Mesh(plane, new THREE.MeshBasicMaterial({color: 0x2F83D2}));
 
     ground1.rotation.x = - Math.PI / 2;
     ground1.position.y = - 300;
@@ -229,7 +229,7 @@ import Bird from './classes/Bird.js';
 
     // ground 2
 
-    ground2 = new THREE.Mesh(plane, new THREE.MeshBasicMaterial({color: 0x060606}));
+    ground2 = new THREE.Mesh(plane, new THREE.MeshBasicMaterial({color: 0x2F83D2}));
 
     ground2.rotation.x = - Math.PI / 2;
     ground2.position.y = - 300;
@@ -240,15 +240,15 @@ import Bird from './classes/Bird.js';
   };
 
   const addParticles = () => {
-
-    //const texture = textureLoader.load(`https://yume.human-interactive.org/examples/forest/particle.png`);
-
+    //const texture = new THREE.TextureLoader.load(`https://yume.human-interactive.org/examples/forest/particle.png`);
+    const textureLoader = new THREE.TextureLoader().load(`https://yume.human-interactive.org/examples/forest/particle.png`);
+    console.log(textureLoader);
     const material = new THREE.PointsMaterial({
       color: 0x9274ce,
-      size: 8,
-      //map: texture,
+      size: 10,
+      map: textureLoader,
       blending: THREE.AdditiveBlending,
-      opacity: 0.50,
+      opacity: 0.5,
       transparent: true
     });
 
@@ -267,10 +267,8 @@ import Bird from './classes/Bird.js';
 
     particles1 = new THREE.Points(geometry, material);
     particles2 = new THREE.Points(geometry, material);
-
-    particles1.position.z = - 1500;
+    //particles1.position.z = - 100;
     particles2.position.z = - 4500;
-
     scene.add(particles1);
     scene.add(particles2);
   };
