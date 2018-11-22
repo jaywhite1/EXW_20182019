@@ -134,7 +134,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
     try {
       video = await loadVideo();
-      console.log(video);
+      //console.log(video);
     } catch (e) {
       const info = document.getElementById(`info`);
       info.textContent = `this browser does not support video capture,` +
@@ -159,13 +159,13 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     async function poseDetectionFrame() {
 
       // Load posenet
-      net = await posenet.load(0.5);
+      //net = await posenet.load(0.5);
 
       // Scale the image. The smaller the faster
       const imageScaleFactor = 0.55;
 
       // Stride, the larger, the smaller the output, the faster
-      const outputStride = 16;
+      const outputStride = 8;
   
       const poses = [];
 
@@ -175,12 +175,12 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
         outputStride);
       poses.push(pose);
 
-      //console.log(pose);
+      console.log(pose.keypoints[5].position.x.toFixed(2), pose.keypoints[6].position.x.toFixed(2));
 
-      // Show a pose (i.e. a person) only if probability more than 0.1
-      const minPoseConfidence = 0.1;
-      // Show a body part only if probability more than 0.3
-      const minPartConfidence = 0.5;
+      // Show a pose (i.e. a person) only if probability more than 
+      const minPoseConfidence = 0.4;
+      // Show a body part only if probability more than 
+      const minPartConfidence = 0.6;
   
       ctx.clearRect(0, 0, videoWidth, videoHeight);
 
