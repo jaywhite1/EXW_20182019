@@ -14,6 +14,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
   let sea, bird;
   const pose = 1;
+  let playerPose;
   let hemisphereLight, shadowLight, ambientLight;
 
   let video, net;
@@ -169,13 +170,13 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
   
       const poses = [];
 
-      const pose = await net.estimateSinglePose(video, 
+      playerPose = await net.estimateSinglePose(video, 
         imageScaleFactor, 
         flipHorizontal, 
         outputStride);
-      poses.push(pose);
+      poses.push(playerPose);
 
-      console.log(pose.keypoints[5].position.x.toFixed(2), pose.keypoints[6].position.x.toFixed(2));
+      //console.log(playerPose);
 
       // Show a pose (i.e. a person) only if probability more than 
       const minPoseConfidence = 0.4;
@@ -296,6 +297,23 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
+  const checkPoses = () => {
+
+
+    console.log(`left shoulder x: ${  playerPose.keypoints[5].position.x.toFixed(0)}`, `right shoulder x: ${  playerPose.keypoints[6].position.x.toFixed(0)}`);
+
+    const leftShoulder = playerPose.keypoints[5].position;
+    const rightShoulder = playerPose.keypoints[6].position;
+    
+    if (leftShoulder.x <= 300) { //|| rightShoulder.x <= 40
+      console.log(`left`);
+    }
+
+    if (rightShoulder.x >= 170) { //|| rightShoulder.x >= 170
+      console.log(`right`);
+    }
+  };
+
   const loop = () => {
     requestAnimationFrame(loop);
 
@@ -303,6 +321,8 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     //mixer.update(0.01);
     sea.moveWaves();
     bird.animate();
+
+    checkPoses();
 
   };
 
