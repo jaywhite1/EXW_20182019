@@ -2,7 +2,7 @@ import * as THREE from 'three';
 //import GLTFLoader from 'three-gltf-loader';
 import Bird from './classes/Bird.js';
 //const loader = new GLTFLoader();
-
+import Colors from './Colors.js';
 {
   let scene,
     WIDTH, HEIGHT,
@@ -219,7 +219,14 @@ import Bird from './classes/Bird.js';
 
     // ground 1
 
-    ground1 = new THREE.Mesh(plane, new THREE.MeshBasicMaterial({color: 0x2F83D2}));
+    //this.mesh = new THREE.Mesh(geom, mat);
+
+    ground1 = new THREE.Mesh(plane, new THREE.MeshPhongMaterial({
+      color: Colors.blue,
+            // transparent: true,
+            // opacity:.6,
+      shading: THREE.FlatShading,
+    }));
 
     ground1.rotation.x = - Math.PI / 2;
     ground1.position.y = - 300;
@@ -229,8 +236,12 @@ import Bird from './classes/Bird.js';
 
     // ground 2
 
-    ground2 = new THREE.Mesh(plane, new THREE.MeshBasicMaterial({color: 0x2F83D2}));
-
+    ground2 = new THREE.Mesh(plane, new THREE.MeshPhongMaterial({
+      color: Colors.blue,
+            // transparent: true,
+            // opacity:.6,
+      shading: THREE.FlatShading,
+    }));
     ground2.rotation.x = - Math.PI / 2;
     ground2.position.y = - 300;
     ground2.position.z = - 30000;
