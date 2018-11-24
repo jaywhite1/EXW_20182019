@@ -19,7 +19,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
   let video, net;
 
-  const videoWidth = 450;
+  const videoWidth = 400;
   const videoHeight = 300;
 
     //load audio, best wel nog aparte klasse voor maken
@@ -166,7 +166,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
       const imageScaleFactor = 0.55;
 
       // Stride, the larger, the smaller the output, the faster
-      const outputStride = 8;
+      const outputStride = 16;
   
       const poses = [];
 
@@ -179,7 +179,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
       //console.log(playerPose);
 
       // Show a pose (i.e. a person) only if probability more than 
-      const minPoseConfidence = 0.4;
+      const minPoseConfidence = 0.5;
       // Show a body part only if probability more than 
       const minPartConfidence = 0.6;
   
@@ -299,18 +299,43 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
   const checkPoses = () => {
 
+    const leftShoulder = playerPose.keypoints[5];
+    const rightShoulder = playerPose.keypoints[6];
+    const leftElbow = playerPose.keypoints[7];
+    const rightElbow = playerPose.keypoints[8];
+    const leftWrist = playerPose.keypoints[9];
+    const rightWrist = playerPose.keypoints[10];
 
-    console.log(`left shoulder x: ${  playerPose.keypoints[5].position.x.toFixed(0)}`, `right shoulder x: ${  playerPose.keypoints[6].position.x.toFixed(0)}`);
 
-    const leftShoulder = playerPose.keypoints[5].position;
-    const rightShoulder = playerPose.keypoints[6].position;
-    
-    if (leftShoulder.x <= 300) { //|| rightShoulder.x <= 40
-      console.log(`left`);
-    }
+    //console.log(`nose: ${  playerPose.keypoints[1].position.y.toFixed(0)}`, `right shoulder x: ${  playerPose.keypoints[6].position.x.toFixed(0)}`);
+    //console.log(playerPose.keypoints);
 
-    if (rightShoulder.x >= 170) { //|| rightShoulder.x >= 170
-      console.log(`right`);
+    // if (leftShoulder.x <= 300) { //|| rightShoulder.x <= 40
+    //   console.log(`left`);
+    // }
+
+    // if (rightShoulder.x >= 170) { //|| rightShoulder.x >= 170
+    //   console.log(`right`);
+    // }
+
+    //console.log((leftShoulder.x - rightShoulder.x).toFixed(0));
+
+    if (leftShoulder.position.x - rightShoulder.position.x <= 120) { //|| rightShoulder.x <= 40
+      //console.log(`ok`);
+
+      if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.4) {
+
+        if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) || 
+        (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
+          console.log(`flex up`);
+        } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) || 
+        (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.y <= rightElbow.position.y)) {
+          console.log(`flex down`);
+        }
+      }
+
+    } else {
+      console.log(`je staat te dicht`);
     }
   };
 
