@@ -343,8 +343,8 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
             }, 100);
             
           } else if ((leftElbow.position.y > leftShoulder.position.y 
-            && leftWrist.position.x < leftElbow.position.x - 50) || 
-          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 50)) {
+            && leftWrist.position.x < leftElbow.position.x - 30) || 
+          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
             console.log(`flex down`);
             //bird.changePose(2, scene);
           } else {
