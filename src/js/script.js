@@ -326,7 +326,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
     //console.log((leftShoulder.x - rightShoulder.x).toFixed(0));
 
-    if (leftShoulder.position.x - rightShoulder.position.x <= 120) { //|| rightShoulder.x <= 40
+    if (leftShoulder.position.x - rightShoulder.position.x <= 150) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
       if (!didFlex) {
@@ -335,18 +335,26 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
           if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) || 
           (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
             console.log(`flex up`);
+          
             didFlex = true;
-            //bird.changePose(0, scene);
+            bird.changePose(0, scene);
 
             setTimeout(() => {
+              
               didFlex = false;
-            }, 100);
+            }, 2000);
             
           } else if ((leftElbow.position.y > leftShoulder.position.y 
             && leftWrist.position.x < leftElbow.position.x - 30) || 
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
             console.log(`flex down`);
-            //bird.changePose(2, scene);
+
+            didFlex = true;
+            bird.changePose(2, scene);
+
+            setTimeout(() => {
+              didFlex = false;
+            }, 2000);
           } else {
             console.log(`neutral`);
           }
