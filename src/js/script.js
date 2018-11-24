@@ -17,6 +17,8 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
   let playerPose;
   let hemisphereLight, shadowLight, ambientLight;
 
+  let didFlex = false;
+
   let video, net;
 
   const videoWidth = 400;
@@ -47,6 +49,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     checkKeys();
 
     bindPage();
+
 
     //start de render loop
     loop();
@@ -145,7 +148,6 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     }
 
     detectPoseInRealTime(video, net);
-    
   };
 
   const detectPoseInRealTime = (video, net) => {
@@ -179,7 +181,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
       //console.log(playerPose);
 
       // Show a pose (i.e. a person) only if probability more than 
-      const minPoseConfidence = 0.5;
+      const minPoseConfidence = 0.4;
       // Show a body part only if probability more than 
       const minPartConfidence = 0.6;
   
@@ -205,11 +207,15 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
           drawBoundingBox(keypoints, ctx);
         }
       });
-  
+      
+
+      checkPoses();
       requestAnimationFrame(poseDetectionFrame);
     }
   
     poseDetectionFrame();
+
+
   };
   
 
@@ -323,17 +329,31 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     if (leftShoulder.position.x - rightShoulder.position.x <= 120) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
-      if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.4) {
+      if (!didFlex) {
+        if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.7) {
 
-        if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) || 
-        (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
-          console.log(`flex up`);
-        } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) || 
-        (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.y <= rightElbow.position.y)) {
-          console.log(`flex down`);
+          if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) || 
+          (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
+            console.log(`flex up`);
+            didFlex = true;
+            //bird.changePose(0, scene);
+
+            setTimeout(() => {
+              didFlex = false;
+            }, 100);
+            
+          } else if ((leftElbow.position.y > leftShoulder.position.y 
+            && leftWrist.position.x < leftElbow.position.x - 50) || 
+          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 50)) {
+            console.log(`flex down`);
+            //bird.changePose(2, scene);
+          } else {
+            console.log(`neutral`);
+          }
         }
-      }
 
+      }
+      
     } else {
       console.log(`je staat te dicht`);
     }
@@ -347,7 +367,6 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     sea.moveWaves();
     bird.animate();
 
-    checkPoses();
 
   };
 
