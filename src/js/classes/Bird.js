@@ -13,9 +13,7 @@ class Bird {
 
     loader.load(`./assets/birb.glb`, gltf => {
 
-      gltf.scene.scale.set(4, 4, 4);
-      gltf.scene.rotation.copy(new THREE.Euler(0, - 3 * Math.PI / 6, 0));
-      gltf.scene.position.set(200, 100, 0);
+      gltf.scene.scale.set(0.5, 0.5, 0.5);
 
 
       //scene.add(gltf.scene);
@@ -26,13 +24,16 @@ class Bird {
 
     });
 
-    
+
   }
 
   poses(pose, scene, gltf) {
     //console.log(pose);
+    console.log(pose);
+
     scene.add(gltf.scene);
-    
+    gltf.scene.position.set(0, - 18, - 50);
+    gltf.scene.rotation.y = Math.PI;
     mixer = new THREE.AnimationMixer(gltf.scene);
 
     animation = mixer.clipAction(gltf.animations[pose]);
@@ -50,13 +51,14 @@ class Bird {
 
     idle = mixer.clipAction(gltfGlobal.animations[1]);
     animation.crossFadeTo(idle.play(), 5);
-    
+
 
     setTimeout(() => {
       currentAnimation = 1;
     }, 400);
     
     //console.log(currentAnimation);
+    console.log(currentAnimation);
 
   }
 
@@ -69,7 +71,7 @@ class Bird {
       mixer.update(0.05);
     }
   }
-  
+
 
 }
 
