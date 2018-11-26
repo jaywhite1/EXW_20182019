@@ -108,7 +108,7 @@ import Colors from './Colors.js';
     if (fatigue.value < 1) {
       console.log(`dash bar is leeg`);
     }
-    document.querySelector(`.val`).innerHTML = fatigue.value;
+    document.getElementsByClassName(`.val`).innerHTML = fatigue.value;
   };
 
   const menuPage = () => {
@@ -411,21 +411,25 @@ import Colors from './Colors.js';
 
           if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) ||
           (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
-            console.log(`flex up`);
+            if (fatigue.value > 1) {
 
-            didFlex = true;
-            bird.changePose(0, scene);
-
-            setTimeout(() => {
-              didFlex = false;
-            }, 2000);
+              console.log(`flex up`);
+              camera.position.z -= 30;
+              fatigue.value -= 10;
+              didFlex = true;
+              bird.changePose(0, camera);
+              showValue();
+              setTimeout(() => {
+                didFlex = false;
+              }, 2000);
+            }
 
           } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) ||
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
             console.log(`flex down`);
 
             didFlex = true;
-            bird.changePose(2, scene);
+            bird.changePose(2, camera);
 
             setTimeout(() => {
               didFlex = false;
@@ -601,7 +605,6 @@ import Colors from './Colors.js';
       if (fatigue.value > 1) {
         camera.position.z -= 30;
         fatigue.value -= 10;
-        showValue();
       }
     }
   };
@@ -615,7 +618,6 @@ import Colors from './Colors.js';
     movePlayer();
     //mixer.update(0.01);
     bird.animate();
-
     if (!gameStarted) {
       menuPage();
 
