@@ -1,26 +1,20 @@
 import * as THREE from 'three';
 import * as posenet from '@tensorflow-models/posenet';
-import Sea from './classes/Sea.js';
 import Bird from './classes/Bird.js';
 import 'babel-polyfill';
 
 import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
-//import GLTFLoader from 'three-gltf-loader';
-import Bird from './classes/Bird.js';
 //const loader = new GLTFLoader();
 import Colors from './Colors.js';
 
 {
   let scene,
     WIDTH, HEIGHT,
-    camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, particles1, particles2, speed, clock, delta, aspectRatio, nearPlane, farPlane;
+    camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, nearPlane, farPlane, particles1, particles2, speed, clock, delta;
 
-  let sea, bird;
-  const pose = 1;
-  let playerPose;
-  let hemisphereLight, shadowLight, ambientLight;
   let bird;
   const pose = 1;
+  let playerPose;
   let hemisphereLight, shadowLight, ambientLight;
   const fatigue = document.querySelector(`.fatigue`);
   let didFlex = false;
@@ -44,7 +38,6 @@ import Colors from './Colors.js';
     //themeSound.play();
   });
 
-
   const init = () => {
 
     navigator.getUserMedia = navigator.getUserMedia ||
@@ -62,7 +55,7 @@ import Colors from './Colors.js';
     //start de render loop
     loop();
   };
-  
+
   window.addEventListener(`keyup`, function(e) {
     switch (e.keyCode) {
     case 37:
@@ -121,7 +114,7 @@ import Colors from './Colors.js';
   const menuPage = () => {
     const menuPage = document.getElementsByClassName(`menu_page`);
     const menuPlay = document.getElementsByClassName(`menu_play`);
-    
+
     menuPlay[0].addEventListener(`click`, () => { menuPage[0].className = `hide`;});
 
     if (!tooClose) {
@@ -134,7 +127,7 @@ import Colors from './Colors.js';
     } else {
       menuPlay[0].innerHTML = `je staat te dicht`;
     }
-    
+
   };
 
   const createScene = () => {
@@ -146,20 +139,24 @@ import Colors from './Colors.js';
 
     scene = new THREE.Scene();
 
-    scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
+    //scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
 
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 60;
+    nearPlane = 1;
+    farPlane = 3000;
     camera = new THREE.PerspectiveCamera(
           fieldOfView,
-          aspectRatio
+          aspectRatio,
+          nearPlane,
+          farPlane
       );
 
-    camera.position.x = 700; //verte?
+    camera.position.x = 100; //verte?
     camera.position.z = 0; // l,r
     camera.position.y = 300; //hoogte
-    camera.rotation.y = 90 * Math.PI / 180;
+    scene.add(camera);
 
       //create renderer
     renderer = new THREE.WebGLRenderer({
@@ -182,7 +179,7 @@ import Colors from './Colors.js';
       throw new Error(
           `Browser API navigator.mediaDevices.getUserMedia not available`);
     }
-  
+
     const video = document.getElementById(`video`);
     video.width = videoWidth;
     video.height = videoHeight;
@@ -196,7 +193,7 @@ import Colors from './Colors.js';
     });
 
     video.srcObject = stream;
-  
+
     return new Promise(resolve => {
       video.onloadedmetadata = () => {
         resolve(video);
@@ -207,7 +204,7 @@ import Colors from './Colors.js';
   const loadVideo = async () => {
     const video = await setupCamera();
     video.play();
-  
+
     return video;
   };
 
@@ -237,10 +234,10 @@ import Colors from './Colors.js';
     const ctx = canvas.getContext(`2d`);
     // since images are being fed from a webcam
     const flipHorizontal = true;
-  
+
     canvas.width = videoWidth;
     canvas.height = videoHeight;
-  
+
     async function poseDetectionFrame() {
 
       // Load posenet
@@ -251,26 +248,26 @@ import Colors from './Colors.js';
 
       // Stride, the larger, the smaller the output, the faster
       const outputStride = 16;
-  
+
       const poses = [];
 
-      playerPose = await net.estimateSinglePose(video, 
-        imageScaleFactor, 
-        flipHorizontal, 
+      playerPose = await net.estimateSinglePose(video,
+        imageScaleFactor,
+        flipHorizontal,
         outputStride);
       poses.push(playerPose);
 
       //console.log(playerPose);
 
-      // Show a pose (i.e. a person) only if probability more than 
+      // Show a pose (i.e. a person) only if probability more than
       const minPoseConfidence = 0.4;
-      // Show a body part only if probability more than 
+      // Show a body part only if probability more than
       const minPartConfidence = 0.6;
-  
+
       ctx.clearRect(0, 0, videoWidth, videoHeight);
 
       const showVideo = true;
-  
+
       if (showVideo) {
         ctx.save();
         ctx.scale(- 1, 1);
@@ -278,7 +275,7 @@ import Colors from './Colors.js';
         ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
         ctx.restore();
       }
-  
+
       // For each pose (i.e. person) detected in an image, loop through the poses
       // and draw the resulting skeleton and keypoints if over certain confidence
       // scores
@@ -289,16 +286,16 @@ import Colors from './Colors.js';
           drawBoundingBox(keypoints, ctx);
         }
       });
-      
+
       checkPoses();
       requestAnimationFrame(poseDetectionFrame);
     }
-  
+
     poseDetectionFrame();
 
 
   };
-  
+
 
   const createLights = () => {
     hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, .9);
@@ -330,7 +327,7 @@ import Colors from './Colors.js';
 
 
   };
-  
+
   const createBird = () => {
     bird = new Bird(pose, camera);
 
@@ -367,17 +364,6 @@ import Colors from './Colors.js';
         break;
       }
     };
-  };
-
-  const createSea = () => {
-    sea = new Sea();
-
-    console.log(sea);
-
-    sea.mesh.position.y = - 600;
-
-        // add the mesh of the sea to the scene
-    scene.add(sea.mesh);
   };
 
   const onWindowResize = () => {
@@ -417,24 +403,24 @@ import Colors from './Colors.js';
       tooClose = false;
 
 
-  
+
       tooCloseSection.className = `hide`;
 
       if (!didFlex) {
         if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.7) {
 
-          if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) || 
+          if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) ||
           (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
             console.log(`flex up`);
-          
+
             didFlex = true;
             bird.changePose(0, scene);
 
             setTimeout(() => {
               didFlex = false;
             }, 2000);
-            
-          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) || 
+
+          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) ||
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
             console.log(`flex down`);
 
@@ -450,7 +436,7 @@ import Colors from './Colors.js';
         }
 
       }
-      
+
     } else {
       tooClose = true;
       console.log(`je staat te dicht`);
@@ -459,7 +445,7 @@ import Colors from './Colors.js';
         const tooCloseSection = document.getElementById(`too_close`);
         tooCloseSection.className = `too_close display_page`;
       }
-      
+
     }
   };
   const fly = () => {
@@ -576,7 +562,7 @@ import Colors from './Colors.js';
     scene.add(particles1);
     scene.add(particles2);
   };
-  
+
   const checkCamPosition = () => {
     if (camera.position.y <= - 250) {
       camera.position.y = 300;
@@ -634,7 +620,7 @@ import Colors from './Colors.js';
       menuPage();
 
     }
-    
+
   };
 
   init();
