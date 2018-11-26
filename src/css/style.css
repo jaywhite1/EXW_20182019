@@ -73,7 +73,7 @@ h1 {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: linear-gradient(#e4e0ba, #f7d9aa);
+  background: linear-gradient(180deg, #fcff9e 0%, #c67700 100%);
   z-index: 0;
 }
 
@@ -85,4 +85,36 @@ h1 {
   width: 100vw;
   position: absolute;
   z-index: 1;
+}
+
+.healthbar {
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 5rem;
+  z-index: 3;
+  position: absolute;
+}
+
+.health {
+  width: 90%;
+  height: 2rem;
+  appearance: none;
+}
+
+.health::-webkit-progress-bar {
+  background-color: grey;
+  border-radius: 2px;
+}
+
+.health::-webkit-progress-value {
+  border-radius: 2px;
+}
+
+.health[value]::-webkit-progress-value {
+  background-color: red;
+  border-radius: 2px;
 }

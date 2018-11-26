@@ -10,21 +10,23 @@ import Colors from './Colors.js';
   const spd = 10;
   const input = {left: 0, right: 0, up: 0, down: 0};
     //load audio, best wel nog aparte klasse voor maken
-  const audioListener = new THREE.AudioListener();
-  const themeSound = new THREE.Audio(audioListener);
-  const audioLoader = new THREE.AudioLoader();
-  audioLoader.load(`./assets/flex.mp3`, function(buffer) {
-    themeSound.setBuffer(buffer);
-    themeSound.setLoop(true);
-    themeSound.setVolume(0.2);
-    themeSound.play();
-  });
+  //const audioListener = new THREE.AudioListener();
+  //const themeSound = new THREE.Audio(audioListener);
+  // const audioLoader = new THREE.AudioLoader();
+  // audioLoader.load(`./assets/flex.mp3`, function(buffer) {
+  //   themeSound.setBuffer(buffer);
+  //   themeSound.setLoop(true);
+  //   themeSound.setVolume(0.2);
+  //   themeSound.play();
+  // });
 
   let bird;
   const pose = 1;
   let hemisphereLight, shadowLight, ambientLight;
+  const health = document.querySelector(`.health`);
 
   const init = () => {
+    THREE.Cache.enabled = true;
     clock = new THREE.Clock();
     createScene();
     createLights();
@@ -61,9 +63,11 @@ import Colors from './Colors.js';
       input.down = 1;
       break;
     case 37:
-      console.log(`left`);
-      input.left = 1;
-      bird.changePose(0, camera);
+      if (health.value > 1) {
+        console.log(`left`);
+        input.left = 1;
+        bird.changePose(0, camera);
+      }
       break;
     case 38:
       console.log(`up`);
@@ -80,13 +84,21 @@ import Colors from './Colors.js';
     }
   });
 
+  const showValue = () => {
+    console.log(health.value);
+    if (health.value < 1) {
+      console.log(`dash bar is leeg`);
+    }
+    document.querySelector(`.val`).innerHTML = health.value;
+  };
+
   const createLights = () => {
     hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, .9);
     shadowLight = new THREE.DirectionalLight(0xffffff, .9);
     ambientLight = new THREE.AmbientLight(0xdc8874, .4);
 
         // Set the direction of the light
-    shadowLight.position.set(150, 350, 350);
+    shadowLight.position.set(150, 150, 450);
 
         // Allow shadow casting
     shadowLight.castShadow = true;
@@ -101,12 +113,14 @@ import Colors from './Colors.js';
 
         // define the resolution of the shadow; the higher the better,
         // but also the more expensive and less performant
-    shadowLight.shadow.mapSize.width = 2048;
-    shadowLight.shadow.mapSize.height = 2048;
+    shadowLight.shadow.mapSize.width = 100;
+    shadowLight.shadow.mapSize.height = 100;
 
     scene.add(hemisphereLight);
     scene.add(shadowLight);
     scene.add(ambientLight);
+
+
   };
   const createBird = () => {
     bird = new Bird(pose, camera);
@@ -125,13 +139,11 @@ import Colors from './Colors.js';
 
     scene = new THREE.Scene();
 
-    //scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
-
         //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 60;
     nearPlane = 1;
-    farPlane = 10000;
+    farPlane = 3000;
     camera = new THREE.PerspectiveCamera(
             fieldOfView,
             aspectRatio,
@@ -141,8 +153,9 @@ import Colors from './Colors.js';
 
     camera.position.x = 100; //verte?
     camera.position.z = 0; // l,r
-    camera.position.y = - 300; //hoogte
+    camera.position.y =  300; //hoogte
     scene.add(camera);
+
         //create renderer
     renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -166,7 +179,7 @@ import Colors from './Colors.js';
 
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
-  const run = () => {
+  const fly = () => {
     speed = delta * 700;
     //particles1.position.x = 80 * Math.cos(r * 2);
     //particles1.position.y = Math.sin(r * 2) + 100;
@@ -185,13 +198,13 @@ import Colors from './Colors.js';
     ground1.position.z += speed;
     ground2.position.z += speed;
 
-    if (ground1.position.z - 10000 > camera.position.z) ground1.position.z -= 40000;
-    if (ground2.position.z - 10000 > camera.position.z) ground2.position.z -= 40000;
+    if (ground1.position.z - 3000 > camera.position.z) ground1.position.z -= 10000;
+    if (ground2.position.z - 3000 > camera.position.z) ground2.position.z -= 10000;
 
   };
 
   const addGround = () => {
-    const plane = new THREE.PlaneBufferGeometry(8000, 20000, 9, 24);
+    const plane = new THREE.PlaneBufferGeometry(1600, 5000, 5, 5);
     const position = plane.attributes.position;
 
     for (let i = 0;i < position.count;i ++) {
@@ -216,13 +229,12 @@ import Colors from './Colors.js';
       }
 
     }
-
     // ground 1
 
     //this.mesh = new THREE.Mesh(geom, mat);
 
     ground1 = new THREE.Mesh(plane, new THREE.MeshPhongMaterial({
-      color: Colors.blue,
+      color: Colors.brownDark,
             // transparent: true,
             // opacity:.6,
       shading: THREE.FlatShading,
@@ -230,21 +242,21 @@ import Colors from './Colors.js';
 
     ground1.rotation.x = - Math.PI / 2;
     ground1.position.y = - 300;
-    ground1.position.z = - 10000;
+    ground1.position.z = 0;
 
     scene.add(ground1);
 
     // ground 2
 
     ground2 = new THREE.Mesh(plane, new THREE.MeshPhongMaterial({
-      color: Colors.blue,
+      color: Colors.brown,
             // transparent: true,
             // opacity:.6,
       shading: THREE.FlatShading,
     }));
     ground2.rotation.x = - Math.PI / 2;
     ground2.position.y = - 300;
-    ground2.position.z = - 30000;
+    ground2.position.z = - 5000;
 
     scene.add(ground2);
 
@@ -252,21 +264,19 @@ import Colors from './Colors.js';
 
   const addParticles = () => {
     //const texture = new THREE.TextureLoader.load(`https://yume.human-interactive.org/examples/forest/particle.png`);
-    const textureLoader = new THREE.TextureLoader().load(`https://yume.human-interactive.org/examples/forest/particle.png`);
-    console.log(textureLoader);
+    const textureLoader = new THREE.TextureLoader().load(`../assets/firefly.png`);
     const material = new THREE.PointsMaterial({
-      color: 0x9274ce,
-      size: 10,
+      size: 5,
       map: textureLoader,
       blending: THREE.AdditiveBlending,
-      opacity: 0.5,
+      opacity: 0.8,
       transparent: true
     });
 
     const geometry = new THREE.BufferGeometry();
     const points = [];
 
-    for (let i = 0;i < 500;i ++) {
+    for (let i = 0;i < 50;i ++) {
 
       points.push((Math.random() * 1500) - 750);
       points.push((Math.random() * 1000) - 400);
@@ -283,14 +293,22 @@ import Colors from './Colors.js';
     scene.add(particles1);
     scene.add(particles2);
   };
+  const checkCamPosition = () => {
+    if (camera.position.y <= - 250) {
+      camera.position.y = 300;
+
+    }
+
+  };
 
   const movePlayer = () => {
-    //camera.position.y -= Math.cos(camera.rotation.y) * spd / 30;
-    //camera.position.y -= Math.sin(camera.rotation.y) * spd / 30;
+    camera.position.y -= Math.cos(camera.rotation.y) * spd / 2;
+    camera.position.y -= Math.sin(camera.rotation.y) * spd / 2;
     if (input.up === 1) {
       if (camera.position.x === - 570) {
         camera.position.x = - 570;
       } else {
+        camera.rotation.z = 6.5;
         camera.position.x -= Math.cos(camera.rotation.y) * spd;
         camera.position.x -= Math.sin(camera.rotation.y) * spd;
       }
@@ -300,6 +318,7 @@ import Colors from './Colors.js';
       if (camera.position.x === 570) {
         camera.position.x = 570;
       } else {
+        camera.rotation.z = 25;
         camera.position.x += Math.cos(camera.rotation.y) * spd;
         camera.position.x += Math.sin(camera.rotation.y) * spd;
       }
@@ -309,15 +328,21 @@ import Colors from './Colors.js';
       camera.position.y += Math.sin(camera.rotation.y) * spd / 2;
     }
     if (input.left === 1) {
-      camera.position.z -= 30;
+      if (health.value > 1) {
+        camera.position.z -= 30;
+        health.value -= 10;
+        showValue();
+      }
     }
   };
 
   const loop = () => {
     requestAnimationFrame(loop);
+
     renderer.render(scene, camera);
     delta = clock.getDelta();
-    run(delta);
+    checkCamPosition();
+    fly(delta);
     movePlayer();
     //mixer.update(0.01);
     bird.animate();
