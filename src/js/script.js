@@ -19,6 +19,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
   let didFlex = false;
   let tooClose = false;
+  let gameStarted = false;
 
   let video, net;
 
@@ -68,20 +69,11 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
       if (didFlex) {
         menuPage[0].className = `hide`;
+        gameStarted = true;
       }
     } else {
       menuPlay[0].innerHTML = `je staat te dicht`;
     }
-    
-  };
-
-  const tooClosePage = () => {
-    const tooCloseSection = document.getElementById(`too_close`);
-
-    console.log(`je staat te dicht`);
-    tooClose = true;
-
-    tooCloseSection.className = `too_close display_page`;
     
   };
 
@@ -238,7 +230,6 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
         }
       });
       
-
       checkPoses();
       requestAnimationFrame(poseDetectionFrame);
     }
@@ -398,7 +389,14 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
       }
       
     } else {
-      tooClosePage();
+      tooClose = true;
+      console.log(`je staat te dicht`);
+
+      if (gameStarted) {
+        const tooCloseSection = document.getElementById(`too_close`);
+        tooCloseSection.className = `too_close display_page`;
+      }
+      
     }
   };
 
@@ -410,8 +408,11 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     sea.moveWaves();
     bird.animate();
 
-    menuPage();
+    if (!gameStarted) {
+      menuPage();
 
+    }
+    
   };
 
   init();
