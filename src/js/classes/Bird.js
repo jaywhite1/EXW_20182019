@@ -20,7 +20,7 @@ class Bird {
 
       gltfGlobal = gltf;
       this.poses(pose, scene, gltf);
-      console.log(pose);
+      //console.log(pose);
 
     });
 
@@ -28,6 +28,7 @@ class Bird {
   }
 
   poses(pose, scene, gltf) {
+    //console.log(pose);
     console.log(pose);
 
     scene.add(gltf.scene);
@@ -46,7 +47,7 @@ class Bird {
     currentAnimation = pose;
     this.poses(pose, scene, gltfGlobal);
     animation.setLoop(THREE.LoopOnce);
-    console.log(currentAnimation);
+    //console.log(currentAnimation);
 
     idle = mixer.clipAction(gltfGlobal.animations[1]);
     animation.crossFadeTo(idle.play(), 5);
@@ -55,7 +56,8 @@ class Bird {
     setTimeout(() => {
       currentAnimation = 1;
     }, 400);
-
+    
+    //console.log(currentAnimation);
     console.log(currentAnimation);
 
   }
