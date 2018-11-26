@@ -18,6 +18,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
   let hemisphereLight, shadowLight, ambientLight;
 
   let didFlex = false;
+  let tooClose = false;
 
   let video, net;
 
@@ -41,6 +42,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     navigator.getUserMedia = navigator.getUserMedia ||
     navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
+
     createScene();
     createLights();
     createSea();
@@ -53,6 +55,34 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
     //start de render loop
     loop();
+  };
+
+  const menuPage = () => {
+    const menuPage = document.getElementsByClassName(`menu_page`);
+    const menuPlay = document.getElementsByClassName(`menu_play`);
+    
+    menuPlay[0].addEventListener(`click`, () => { menuPage[0].className = `hide`;});
+
+    if (!tooClose) {
+      menuPlay[0].innerHTML = `Flex up to start`;
+
+      if (didFlex) {
+        menuPage[0].className = `hide`;
+      }
+    } else {
+      menuPlay[0].innerHTML = `je staat te dicht`;
+    }
+    
+  };
+
+  const tooClosePage = () => {
+    const tooCloseSection = document.getElementById(`too_close`);
+
+    console.log(`je staat te dicht`);
+    tooClose = true;
+
+    tooCloseSection.className = `too_close display_page`;
+    
   };
 
   const createScene = () => {
@@ -329,6 +359,13 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     if (leftShoulder.position.x - rightShoulder.position.x <= 150) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
+      const tooCloseSection = document.getElementById(`too_close`);
+      tooClose = false;
+
+
+  
+      tooCloseSection.className = `hide`;
+
       if (!didFlex) {
         if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.7) {
 
@@ -340,12 +377,10 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
             bird.changePose(0, scene);
 
             setTimeout(() => {
-              
               didFlex = false;
             }, 2000);
             
-          } else if ((leftElbow.position.y > leftShoulder.position.y 
-            && leftWrist.position.x < leftElbow.position.x - 30) || 
+          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) || 
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
             console.log(`flex down`);
 
@@ -363,7 +398,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
       }
       
     } else {
-      console.log(`je staat te dicht`);
+      tooClosePage();
     }
   };
 
@@ -375,6 +410,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     sea.moveWaves();
     bird.animate();
 
+    menuPage();
 
   };
 
