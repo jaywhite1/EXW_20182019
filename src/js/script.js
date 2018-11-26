@@ -23,7 +23,7 @@ import Colors from './Colors.js';
   let bird;
   const pose = 1;
   let hemisphereLight, shadowLight, ambientLight;
-  const health = document.querySelector(`.health`);
+  const fatigue = document.querySelector(`.fatigue`);
 
   const init = () => {
     THREE.Cache.enabled = true;
@@ -63,7 +63,7 @@ import Colors from './Colors.js';
       input.down = 1;
       break;
     case 37:
-      if (health.value > 1) {
+      if (fatigue.value > 1) {
         console.log(`left`);
         input.left = 1;
         bird.changePose(0, camera);
@@ -85,11 +85,11 @@ import Colors from './Colors.js';
   });
 
   const showValue = () => {
-    console.log(health.value);
-    if (health.value < 1) {
+    console.log(fatigue.value);
+    if (fatigue.value < 1) {
       console.log(`dash bar is leeg`);
     }
-    document.querySelector(`.val`).innerHTML = health.value;
+    document.querySelector(`.val`).innerHTML = fatigue.value;
   };
 
   const createLights = () => {
@@ -328,9 +328,9 @@ import Colors from './Colors.js';
       camera.position.y += Math.sin(camera.rotation.y) * spd / 2;
     }
     if (input.left === 1) {
-      if (health.value > 1) {
+      if (fatigue.value > 1) {
         camera.position.z -= 30;
-        health.value -= 10;
+        fatigue.value -= 10;
         showValue();
       }
     }
@@ -338,7 +338,6 @@ import Colors from './Colors.js';
 
   const loop = () => {
     requestAnimationFrame(loop);
-
     renderer.render(scene, camera);
     delta = clock.getDelta();
     checkCamPosition();

@@ -99,22 +99,22 @@ h1 {
   position: absolute;
 }
 
-.health {
+.fatigue {
   width: 90%;
   height: 2rem;
   appearance: none;
 }
 
-.health::-webkit-progress-bar {
+.fatigue::-webkit-progress-bar {
   background-color: grey;
   border-radius: 2px;
 }
 
-.health::-webkit-progress-value {
+.fatigue::-webkit-progress-value {
   border-radius: 2px;
 }
 
-.health[value]::-webkit-progress-value {
+.fatigue[value]::-webkit-progress-value {
   background-color: red;
   border-radius: 2px;
 }
