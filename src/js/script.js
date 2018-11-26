@@ -5,22 +5,29 @@ import Bird from './classes/Bird.js';
 import 'babel-polyfill';
 
 import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
+//import GLTFLoader from 'three-gltf-loader';
+import Bird from './classes/Bird.js';
+//const loader = new GLTFLoader();
+import Colors from './Colors.js';
 
 {
-
   let scene,
     WIDTH, HEIGHT,
-    camera, fieldOfView, aspectRatio, renderer, container;
+    camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, particles1, particles2, speed, clock, delta, aspectRatio, nearPlane, farPlane;
 
   let sea, bird;
   const pose = 1;
   let playerPose;
   let hemisphereLight, shadowLight, ambientLight;
-
+  let bird;
+  const pose = 1;
+  let hemisphereLight, shadowLight, ambientLight;
+  const fatigue = document.querySelector(`.fatigue`);
   let didFlex = false;
   let tooClose = false;
   let gameStarted = false;
-
+  const spd = 10;
+  const input = {left: 0, right: 0, up: 0, down: 0};
   let video, net;
 
   const videoWidth = 400;
@@ -42,20 +49,73 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
     navigator.getUserMedia = navigator.getUserMedia ||
     navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-
+    THREE.Cache.enabled = true;
+    clock = new THREE.Clock();
     createScene();
     createLights();
-    createSea();
     createBird();
-
     checkKeys();
-
     bindPage();
-
-
+   // setup scene
+    addGround();
+    addParticles();
     //start de render loop
     loop();
+  };
+  
+  window.addEventListener(`keyup`, function(e) {
+    switch (e.keyCode) {
+    case 37:
+      input.left = 0;
+      break;
+    case 87:
+      input.up = 0;
+      break;
+    case 83:
+      input.down = 0;
+      break;
+    case 39:
+      input.right = 0;
+      break;
+    }
+  });
+
+  window.addEventListener(`keydown`, function(e) {
+    switch (e.keyCode) {
+    case 87:
+      input.up = 1;
+      break;
+    case 83:
+      input.down = 1;
+      break;
+    case 37:
+      if (fatigue.value > 1) {
+        console.log(`left`);
+        input.left = 1;
+        bird.changePose(0, camera);
+      }
+      break;
+    case 38:
+      console.log(`up`);
+      bird.changePose(1, camera);
+      break;
+    case 39:
+      console.log(`right`);
+      bird.changePose(2, camera);
+      input.right = 1;
+      break;
+    case 40:
+      console.log(`down`);
+      break;
+    }
+  });
+
+  const showValue = () => {
+    console.log(fatigue.value);
+    if (fatigue.value < 1) {
+      console.log(`dash bar is leeg`);
+    }
+    document.querySelector(`.val`).innerHTML = fatigue.value;
   };
 
   const menuPage = () => {
@@ -246,7 +306,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     ambientLight = new THREE.AmbientLight(0xdc8874, .4);
 
         // Set the direction of the light
-    shadowLight.position.set(150, 350, 350);
+    shadowLight.position.set(150, 150, 450);
 
         // Allow shadow casting
     shadowLight.castShadow = true;
@@ -261,15 +321,18 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 
         // define the resolution of the shadow; the higher the better,
         // but also the more expensive and less performant
-    shadowLight.shadow.mapSize.width = 2048;
-    shadowLight.shadow.mapSize.height = 2048;
+    shadowLight.shadow.mapSize.width = 100;
+    shadowLight.shadow.mapSize.height = 100;
 
     scene.add(hemisphereLight);
     scene.add(shadowLight);
     scene.add(ambientLight);
+
+
   };
+  
   const createBird = () => {
-    bird = new Bird(pose, scene);
+    bird = new Bird(pose, camera);
 
     // bird.poses(1, scene);
     //console.log(bird);
@@ -324,6 +387,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
+
   const checkPoses = () => {
 
     const leftShoulder = playerPose.keypoints[5];
@@ -332,7 +396,6 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
     const rightElbow = playerPose.keypoints[8];
     const leftWrist = playerPose.keypoints[9];
     const rightWrist = playerPose.keypoints[10];
-
 
     //console.log(`nose: ${  playerPose.keypoints[1].position.y.toFixed(0)}`, `right shoulder x: ${  playerPose.keypoints[6].position.x.toFixed(0)}`);
     //console.log(playerPose.keypoints);
@@ -399,13 +462,172 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
       
     }
   };
+  const fly = () => {
+    speed = delta * 700;
+    //particles1.position.x = 80 * Math.cos(r * 2);
+    //particles1.position.y = Math.sin(r * 2) + 100;
+    particles1.position.x = 0;
+    particles1.position.y = 200;
+    particles2.position.x = 0;
+    particles2.position.y = 200;
+    // respawn particles if necessary
+
+    particles1.position.z += speed;
+    particles2.position.z += speed;
+    if (particles1.position.z - 100 > camera.position.z) particles1.position.z -= 3000;
+    if (particles2.position.z - 100 > camera.position.z) particles2.position.z -= 3000;
+    // respawn ground if necessary
+
+    ground1.position.z += speed;
+    ground2.position.z += speed;
+
+    if (ground1.position.z - 3000 > camera.position.z) ground1.position.z -= 10000;
+    if (ground2.position.z - 3000 > camera.position.z) ground2.position.z -= 10000;
+
+  };
+
+  const addGround = () => {
+    const plane = new THREE.PlaneBufferGeometry(1600, 5000, 5, 5);
+    const position = plane.attributes.position;
+
+    for (let i = 0;i < position.count;i ++) {
+
+      const y = Math.floor(i / 10);
+      const x = i - (y * 10);
+
+      if (x === 4 || x === 5) {
+
+        position.setZ(i, - 60 + ((Math.random() * 80) - 40));
+
+      } else {
+
+        position.setZ(i, (Math.random() * 240) - 120);
+
+      }
+
+      if (y === 0 || y === 24) {
+
+        position.setZ(i, - 60);
+
+      }
+
+    }
+    // ground 1
+
+    //this.mesh = new THREE.Mesh(geom, mat);
+
+    ground1 = new THREE.Mesh(plane, new THREE.MeshPhongMaterial({
+      color: Colors.brownDark,
+            // transparent: true,
+            // opacity:.6,
+      shading: THREE.FlatShading,
+    }));
+
+    ground1.rotation.x = - Math.PI / 2;
+    ground1.position.y = - 300;
+    ground1.position.z = 0;
+
+    scene.add(ground1);
+
+    // ground 2
+
+    ground2 = new THREE.Mesh(plane, new THREE.MeshPhongMaterial({
+      color: Colors.brown,
+            // transparent: true,
+            // opacity:.6,
+      shading: THREE.FlatShading,
+    }));
+    ground2.rotation.x = - Math.PI / 2;
+    ground2.position.y = - 300;
+    ground2.position.z = - 5000;
+
+    scene.add(ground2);
+
+  };
+
+  const addParticles = () => {
+    //const texture = new THREE.TextureLoader.load(`https://yume.human-interactive.org/examples/forest/particle.png`);
+    const textureLoader = new THREE.TextureLoader().load(`../assets/firefly.png`);
+    const material = new THREE.PointsMaterial({
+      size: 5,
+      map: textureLoader,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.8,
+      transparent: true
+    });
+
+    const geometry = new THREE.BufferGeometry();
+    const points = [];
+
+    for (let i = 0;i < 50;i ++) {
+
+      points.push((Math.random() * 1500) - 750);
+      points.push((Math.random() * 1000) - 400);
+      points.push((Math.random() * 3000) - 1500);
+
+    }
+
+    geometry.addAttribute(`position`, new THREE.Float32BufferAttribute(points, 3));
+
+    particles1 = new THREE.Points(geometry, material);
+    particles2 = new THREE.Points(geometry, material);
+    //particles1.position.z = - 100;
+    particles2.position.z = - 4500;
+    scene.add(particles1);
+    scene.add(particles2);
+  };
+  
+  const checkCamPosition = () => {
+    if (camera.position.y <= - 250) {
+      camera.position.y = 300;
+
+    }
+
+  };
+
+  const movePlayer = () => {
+    camera.position.y -= Math.cos(camera.rotation.y) * spd / 2;
+    camera.position.y -= Math.sin(camera.rotation.y) * spd / 2;
+    if (input.up === 1) {
+      if (camera.position.x === - 570) {
+        camera.position.x = - 570;
+      } else {
+        camera.rotation.z = 6.5;
+        camera.position.x -= Math.cos(camera.rotation.y) * spd;
+        camera.position.x -= Math.sin(camera.rotation.y) * spd;
+      }
+
+    }
+    if (input.down === 1) {
+      if (camera.position.x === 570) {
+        camera.position.x = 570;
+      } else {
+        camera.rotation.z = 25;
+        camera.position.x += Math.cos(camera.rotation.y) * spd;
+        camera.position.x += Math.sin(camera.rotation.y) * spd;
+      }
+    }
+    if (input.right === 1) {
+      camera.position.y += Math.cos(camera.rotation.y) * spd / 2;
+      camera.position.y += Math.sin(camera.rotation.y) * spd / 2;
+    }
+    if (input.left === 1) {
+      if (fatigue.value > 1) {
+        camera.position.z -= 30;
+        fatigue.value -= 10;
+        showValue();
+      }
+    }
+  };
 
   const loop = () => {
     requestAnimationFrame(loop);
-
     renderer.render(scene, camera);
+    delta = clock.getDelta();
+    checkCamPosition();
+    fly(delta);
+    movePlayer();
     //mixer.update(0.01);
-    sea.moveWaves();
     bird.animate();
 
     if (!gameStarted) {

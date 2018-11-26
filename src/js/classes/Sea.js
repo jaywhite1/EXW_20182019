@@ -5,7 +5,6 @@ class Sea {
   constructor() {
 
     const geom = new THREE.CylinderGeometry(600, 600, 1500, 40, 10);
-    geom.applyMatrix(new THREE.Matrix4().makeRotationX(- Math.PI / 2));
 
     geom.mergeVertices();
 
@@ -46,7 +45,6 @@ class Sea {
     });
 
     this.mesh.geometry.verticesNeedUpdate = true;
-    this.mesh.rotation.z -= .005;
 
   }
 }
