@@ -17,22 +17,20 @@ import Colors from './Colors.js';
   });
   let scene,
     WIDTH, HEIGHT,
-    camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, nearPlane, farPlane, particles1, particles2, speed, clock, delta;
+    camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, particles1, particles2, speed, clock, delta, hemisphereLight, shadowLight, ambientLight;
 
-  let bird;
+  let bird, video, net, playerPose;
   const pose = 1;
-  let playerPose;
-  let hemisphereLight, shadowLight, ambientLight;
-  const fatigue = document.querySelector(`.fatigue`);
+
   let didFlex = false;
   let tooClose = false;
   let gameStarted = false;
-  const spd = 10;
-  const input = {left: 0, right: 0, up: 0, down: 0};
-  let video, net;
 
   const videoWidth = 400;
   const videoHeight = 300;
+  const spd = 10;
+  const input = {left: 0, right: 0, up: 0, down: 0};
+  const fatigue = document.querySelector(`.fatigue`);
 
     //load audio, best wel nog aparte klasse voor maken
   const audioListener = new THREE.AudioListener();
@@ -55,8 +53,7 @@ import Colors from './Colors.js';
     createLights();
     createBird();
     checkKeys();
-    bindPage();
-   // setup scene
+    bindPage(); //posenet
     addGround();
     addParticles();
     //start de render loop
@@ -154,13 +151,9 @@ import Colors from './Colors.js';
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 60;
-    nearPlane = 1;
-    farPlane = 3000;
     camera = new THREE.PerspectiveCamera(
           fieldOfView,
-          aspectRatio,
-          nearPlane,
-          farPlane
+          aspectRatio
       );
 
     camera.position.x = 100; //verte?
@@ -462,29 +455,6 @@ import Colors from './Colors.js';
 
     }
   };
-  const fly = () => {
-    speed = delta * 700;
-    //particles1.position.x = 80 * Math.cos(r * 2);
-    //particles1.position.y = Math.sin(r * 2) + 100;
-    particles1.position.x = 0;
-    particles1.position.y = 200;
-    particles2.position.x = 0;
-    particles2.position.y = 200;
-    // respawn particles if necessary
-
-    particles1.position.z += speed;
-    particles2.position.z += speed;
-    if (particles1.position.z - 100 > camera.position.z) particles1.position.z -= 3000;
-    if (particles2.position.z - 100 > camera.position.z) particles2.position.z -= 3000;
-    // respawn ground if necessary
-
-    ground1.position.z += speed;
-    ground2.position.z += speed;
-
-    if (ground1.position.z - 3000 > camera.position.z) ground1.position.z -= 10000;
-    if (ground2.position.z - 3000 > camera.position.z) ground2.position.z -= 10000;
-
-  };
 
   const addGround = () => {
     const plane = new THREE.PlaneBufferGeometry(1600, 5000, 5, 5);
@@ -576,14 +546,6 @@ import Colors from './Colors.js';
     scene.add(particles2);
   };
 
-  const checkCamPosition = () => {
-    if (camera.position.y <= - 250) {
-      camera.position.y = 300;
-
-    }
-
-  };
-
   const movePlayer = () => {
     camera.position.y -= Math.cos(camera.rotation.y) * spd / 2;
     camera.position.y -= Math.sin(camera.rotation.y) * spd / 2;
@@ -624,15 +586,50 @@ import Colors from './Colors.js';
     delta = clock.getDelta();
     checkCamPosition();
     fly(delta);
-    movePlayer();
     //mixer.update(0.01);
     bird.animate();
+
     if (!gameStarted) {
       menuPage();
-
+    } else {
+      startGame();
     }
 
   };
 
+  const fly = () => {
+    speed = delta * 700;
+    //particles1.position.x = 80 * Math.cos(r * 2);
+    //particles1.position.y = Math.sin(r * 2) + 100;
+    particles1.position.x = 0;
+    particles1.position.y = 200;
+    particles2.position.x = 0;
+    particles2.position.y = 200;
+    // respawn particles if necessary
+
+    particles1.position.z += speed;
+    particles2.position.z += speed;
+    if (particles1.position.z - 100 > camera.position.z) particles1.position.z -= 3000;
+    if (particles2.position.z - 100 > camera.position.z) particles2.position.z -= 3000;
+    // respawn ground if necessary
+
+    ground1.position.z += speed;
+    ground2.position.z += speed;
+
+    if (ground1.position.z - 3000 > camera.position.z) ground1.position.z -= 10000;
+    if (ground2.position.z - 3000 > camera.position.z) ground2.position.z -= 10000;
+  };
+
+  const checkCamPosition = () => {
+    if (camera.position.y <= - 250) {
+      camera.position.y = 300;
+    }
+  };
+
+  const startGame = () => {
+    movePlayer();
+  };
+
   init();
+  
 }
