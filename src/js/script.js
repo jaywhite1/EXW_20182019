@@ -8,6 +8,7 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 import Colors from './Colors.js';
 
 {
+  const flexdistancelabel = document.querySelector(`.score-value`);
   const loadingManager = new THREE.LoadingManager(() => {
     const loadingScreen = document.querySelector(`.loading-screen`);
     console.log(loadingScreen);
@@ -18,7 +19,7 @@ import Colors from './Colors.js';
   let scene,
     WIDTH, HEIGHT,
     camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, particles1, particles2, speed, clock, delta, hemisphereLight, shadowLight, ambientLight;
-
+  let flexdistance = 0;
   let bird, video, net, playerPose;
   const pose = 1;
 
@@ -136,7 +137,10 @@ import Colors from './Colors.js';
     }
 
   };
-
+  const updateDistance = () => {
+    flexdistance += 1;
+    flexdistancelabel.innerHTML = flexdistance;
+  };
   const createScene = () => {
     // Get the width and the height of the screen,
     // use them to set up the aspect ratio of the camera
@@ -145,9 +149,7 @@ import Colors from './Colors.js';
     HEIGHT = window.innerHeight;
 
     scene = new THREE.Scene();
-
-    //scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
-
+    scene.fog = new THREE.FogExp2(0x00ffff, 0.0005);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 60;
@@ -175,6 +177,7 @@ import Colors from './Colors.js';
 
     container = document.getElementsByClassName(`world`);
     container[0].appendChild(renderer.domElement);
+    renderer.setClearColor(0x00ffff, 1.0);
   };
 
   const setupCamera = async () => {
@@ -417,7 +420,7 @@ import Colors from './Colors.js';
             if (fatigue.value > 1) {
 
               console.log(`flex up`);
-              camera.position.z -= 30;
+              camera.position.z -= 100;
               fatigue.value -= 10;
               didFlex = true;
               bird.changePose(0, camera);
@@ -430,7 +433,8 @@ import Colors from './Colors.js';
           } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) ||
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
             console.log(`flex down`);
-
+            camera.position.y += Math.cos(camera.rotation.y) * 200;
+            camera.position.y += Math.sin(camera.rotation.y) * 200;
             didFlex = true;
             bird.changePose(2, camera);
 
@@ -487,7 +491,7 @@ import Colors from './Colors.js';
     //this.mesh = new THREE.Mesh(geom, mat);
 
     ground1 = new THREE.Mesh(plane, new THREE.MeshPhongMaterial({
-      color: Colors.brownDark,
+      color: Colors.brown,
             // transparent: true,
             // opacity:.6,
       shading: THREE.FlatShading,
@@ -547,8 +551,8 @@ import Colors from './Colors.js';
   };
 
   const movePlayer = () => {
-    camera.position.y -= Math.cos(camera.rotation.y) * spd / 2;
-    camera.position.y -= Math.sin(camera.rotation.y) * spd / 2;
+    camera.position.y -= Math.cos(camera.rotation.y) * spd / 10;
+    camera.position.y -= Math.sin(camera.rotation.y) * spd / 10;
     if (input.up === 1) {
       if (camera.position.x === - 570) {
         camera.position.x = - 570;
@@ -593,6 +597,7 @@ import Colors from './Colors.js';
       menuPage();
     } else {
       startGame();
+      updateDistance();
     }
 
   };
@@ -616,8 +621,8 @@ import Colors from './Colors.js';
     ground1.position.z += speed;
     ground2.position.z += speed;
 
-    if (ground1.position.z - 3000 > camera.position.z) ground1.position.z -= 10000;
-    if (ground2.position.z - 3000 > camera.position.z) ground2.position.z -= 10000;
+    if (ground1.position.z - 3000 > camera.position.z) ground1.position.z -= 9600;
+    if (ground2.position.z - 3000 > camera.position.z) ground2.position.z -= 9400;
   };
 
   const checkCamPosition = () => {
@@ -631,5 +636,5 @@ import Colors from './Colors.js';
   };
 
   init();
-  
+
 }
