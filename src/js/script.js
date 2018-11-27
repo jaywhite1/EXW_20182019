@@ -8,6 +8,13 @@ import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 import Colors from './Colors.js';
 
 {
+  const loadingManager = new THREE.LoadingManager(() => {
+    const loadingScreen = document.querySelector(`.loading-screen`);
+    console.log(loadingScreen);
+    loadingScreen.classList.add(`fade-out`);
+    // optional: remove loader from DOM via event listener
+    loadingScreen.addEventListener(`transitionend`, onTransitionEnd);
+  });
   let scene,
     WIDTH, HEIGHT,
     camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, nearPlane, farPlane, particles1, particles2, speed, clock, delta;
@@ -30,7 +37,7 @@ import Colors from './Colors.js';
     //load audio, best wel nog aparte klasse voor maken
   const audioListener = new THREE.AudioListener();
   const themeSound = new THREE.Audio(audioListener);
-  const audioLoader = new THREE.AudioLoader();
+  const audioLoader = new THREE.AudioLoader(loadingManager);
   audioLoader.load(`./assets/flex.mp3`, function(buffer) {
     themeSound.setBuffer(buffer);
     themeSound.setLoop(true);
@@ -55,7 +62,10 @@ import Colors from './Colors.js';
     //start de render loop
     loop();
   };
+  function onTransitionEnd(event) {
+    event.target.remove();
 
+  }
   window.addEventListener(`keyup`, function(e) {
     switch (e.keyCode) {
     case 37:
@@ -326,10 +336,10 @@ import Colors from './Colors.js';
     scene.add(ambientLight);
 
 
-  };
+  };loadingManager;
 
   const createBird = () => {
-    bird = new Bird(pose, camera);
+    bird = new Bird(pose, camera, loadingManager);
 
     // bird.poses(1, scene);
     //console.log(bird);
@@ -536,8 +546,7 @@ import Colors from './Colors.js';
   };
 
   const addParticles = () => {
-    //const texture = new THREE.TextureLoader.load(`https://yume.human-interactive.org/examples/forest/particle.png`);
-    const textureLoader = new THREE.TextureLoader().load(`../assets/firefly.png`);
+    const textureLoader = new THREE.TextureLoader(loadingManager).load(`../assets/firefly.png`);
     const material = new THREE.PointsMaterial({
       size: 5,
       map: textureLoader,
