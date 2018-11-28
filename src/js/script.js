@@ -23,6 +23,7 @@ import Colors from './Colors.js';
   const pose = 1;
 
   let didFlex = false;
+  let flexedUp = false;
   let tooClose = false;
   let gameStarted = false;
 
@@ -127,7 +128,7 @@ import Colors from './Colors.js';
     if (!tooClose) {
       menuPlay[0].innerHTML = `Flex up to start`;
 
-      if (didFlex) {
+      if (flexedUp) {
         menuPage[0].className = `hide`;
         gameStarted = true;
       }
@@ -412,22 +413,24 @@ import Colors from './Colors.js';
       if (!didFlex) {
         if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.7) {
 
-          if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) ||
+          if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) &&
           (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
+            
             if (fatigue.value > 1) {
-
               console.log(`flex up`);
               camera.position.z -= 30;
               fatigue.value -= 10;
               didFlex = true;
+              flexedUp = true;
               bird.changePose(0, camera);
               showValue();
+
               setTimeout(() => {
                 didFlex = false;
-              }, 2000);
+              }, 1000);
             }
 
-          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) ||
+          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) &&
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
             console.log(`flex down`);
 
@@ -436,7 +439,7 @@ import Colors from './Colors.js';
 
             setTimeout(() => {
               didFlex = false;
-            }, 2000);
+            }, 1000);
           } else {
             console.log(`neutral`);
           }
@@ -546,40 +549,6 @@ import Colors from './Colors.js';
     scene.add(particles2);
   };
 
-  const movePlayer = () => {
-    camera.position.y -= Math.cos(camera.rotation.y) * spd / 2;
-    camera.position.y -= Math.sin(camera.rotation.y) * spd / 2;
-    if (input.up === 1) {
-      if (camera.position.x === - 570) {
-        camera.position.x = - 570;
-      } else {
-        camera.rotation.z = 6.5;
-        camera.position.x -= Math.cos(camera.rotation.y) * spd;
-        camera.position.x -= Math.sin(camera.rotation.y) * spd;
-      }
-
-    }
-    if (input.down === 1) {
-      if (camera.position.x === 570) {
-        camera.position.x = 570;
-      } else {
-        camera.rotation.z = 25;
-        camera.position.x += Math.cos(camera.rotation.y) * spd;
-        camera.position.x += Math.sin(camera.rotation.y) * spd;
-      }
-    }
-    if (input.right === 1) {
-      camera.position.y += Math.cos(camera.rotation.y) * spd / 2;
-      camera.position.y += Math.sin(camera.rotation.y) * spd / 2;
-    }
-    if (input.left === 1) {
-      if (fatigue.value > 1) {
-        camera.position.z -= 30;
-        fatigue.value -= 10;
-      }
-    }
-  };
-
   const loop = () => {
     requestAnimationFrame(loop);
     renderer.render(scene, camera);
@@ -629,6 +598,41 @@ import Colors from './Colors.js';
   const startGame = () => {
     movePlayer();
   };
+
+  const movePlayer = () => {
+    // camera.position.y -= Math.cos(camera.rotation.y) * spd / 2;
+    // camera.position.y -= Math.sin(camera.rotation.y) * spd / 2;
+    if (input.up === 1) {
+      if (camera.position.x === - 570) {
+        camera.position.x = - 570;
+      } else {
+        camera.rotation.z = 6.5;
+        camera.position.x -= Math.cos(camera.rotation.y) * spd;
+        camera.position.x -= Math.sin(camera.rotation.y) * spd;
+      }
+
+    }
+    if (input.down === 1) {
+      if (camera.position.x === 570) {
+        camera.position.x = 570;
+      } else {
+        camera.rotation.z = 25;
+        camera.position.x += Math.cos(camera.rotation.y) * spd;
+        camera.position.x += Math.sin(camera.rotation.y) * spd;
+      }
+    }
+    if (input.right === 1) {
+      camera.position.y += Math.cos(camera.rotation.y) * spd / 2;
+      camera.position.y += Math.sin(camera.rotation.y) * spd / 2;
+    }
+    if (input.left === 1) {
+      if (fatigue.value > 1) {
+        camera.position.z -= 30;
+        fatigue.value -= 10;
+      }
+    }
+  };
+
 
   init();
   

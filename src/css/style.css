@@ -86,6 +86,7 @@ h1 {
 .posetest {
   position: absolute;
   bottom: 0;
+  /* z-index: 3; */
 }
 
 .display_page {
