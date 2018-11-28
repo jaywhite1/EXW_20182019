@@ -54,7 +54,6 @@ import Colors from './Colors.js';
     createScene();
     createLights();
     createBird();
-    checkKeys();
     bindPage(); //posenet
     addGround();
     addParticles();
@@ -67,16 +66,16 @@ import Colors from './Colors.js';
   }
   window.addEventListener(`keyup`, function(e) {
     switch (e.keyCode) {
-    case 37:
-      input.left = 0;
-      break;
     case 87:
       input.up = 0;
       break;
     case 83:
       input.down = 0;
       break;
-    case 39:
+    case 65:
+      input.left = 0;
+      break;
+    case 68:
       input.right = 0;
       break;
     }
@@ -90,10 +89,15 @@ import Colors from './Colors.js';
     case 83:
       input.down = 1;
       break;
+    case 65:
+      input.left = 1;
+      break;
+    case 68:
+      input.right = 1;
+      break;
     case 37:
       if (fatigue.value > 1) {
         console.log(`left`);
-        input.left = 1;
         bird.changePose(0, camera);
       }
       break;
@@ -104,7 +108,6 @@ import Colors from './Colors.js';
     case 39:
       console.log(`right`);
       bird.changePose(2, camera);
-      input.right = 1;
       break;
     case 40:
       console.log(`down`);
@@ -138,10 +141,7 @@ import Colors from './Colors.js';
     }
 
   };
-  const updateDistance = () => {
-    flexdistance += 1;
-    flexdistancelabel.innerHTML = flexdistance;
-  };
+  
   const createScene = () => {
     // Get the width and the height of the screen,
     // use them to set up the aspect ratio of the camera
@@ -153,7 +153,7 @@ import Colors from './Colors.js';
     scene.fog = new THREE.FogExp2(0x00ffff, 0.0005);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
-    fieldOfView = 60;
+    fieldOfView = 70;
     camera = new THREE.PerspectiveCamera(
           fieldOfView,
           aspectRatio
@@ -161,7 +161,7 @@ import Colors from './Colors.js';
 
     camera.position.x = 100; //verte?
     camera.position.z = 0; // l,r
-    camera.position.y = 300; //hoogte
+    camera.position.y = 400; //hoogte
     scene.add(camera);
 
       //create renderer
@@ -294,7 +294,6 @@ import Colors from './Colors.js';
         }
       });
 
-      checkPoses();
       requestAnimationFrame(poseDetectionFrame);
     }
 
@@ -343,124 +342,11 @@ import Colors from './Colors.js';
     //bird.changePose(2, scene);
   };
 
-  const checkKeys = () => {
-    document.onkeydown = e => {
-      switch (e.keyCode) {
-      case 37:
-        console.log(`left`);
-        bird.changePose(0, scene);
-        break;
-      case 38:
-        console.log(`up`);
-        bird.changePose(1, scene);
-        break;
-      case 39:
-        console.log(`right`);
-        bird.changePose(2, scene);
-        break;
-      case 40:
-        console.log(`down`);
-        break;
-      case 65:
-        console.log(`a`);
-        bird.moveLeft();
-        break;
-      case 68:
-        console.log(`d`);
-        bird.moveRight();
-        break;
-      }
-    };
-  };
-
   const onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-  };
-
-
-  const checkPoses = () => {
-
-    const leftShoulder = playerPose.keypoints[5];
-    const rightShoulder = playerPose.keypoints[6];
-    const leftElbow = playerPose.keypoints[7];
-    const rightElbow = playerPose.keypoints[8];
-    const leftWrist = playerPose.keypoints[9];
-    const rightWrist = playerPose.keypoints[10];
-
-    //console.log(`nose: ${  playerPose.keypoints[1].position.y.toFixed(0)}`, `right shoulder x: ${  playerPose.keypoints[6].position.x.toFixed(0)}`);
-    //console.log(playerPose.keypoints);
-
-    // if (leftShoulder.x <= 300) { //|| rightShoulder.x <= 40
-    //   console.log(`left`);
-    // }
-
-    // if (rightShoulder.x >= 170) { //|| rightShoulder.x >= 170
-    //   console.log(`right`);
-    // }
-
-    //console.log((leftShoulder.x - rightShoulder.x).toFixed(0));
-
-    if (leftShoulder.position.x - rightShoulder.position.x <= 150) { //|| rightShoulder.x <= 40
-      //console.log(`ok`);
-
-      const tooCloseSection = document.getElementById(`too_close`);
-      tooClose = false;
-
-
-
-      tooCloseSection.className = `hide`;
-
-      if (!didFlex) {
-        if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.7) {
-
-          if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) &&
-          (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
-            
-            if (fatigue.value > 1) {
-              console.log(`flex up`);
-              camera.position.z -= 100;
-              fatigue.value -= 10;
-              didFlex = true;
-              flexedUp = true;
-              bird.changePose(0, camera);
-              showValue();
-
-              setTimeout(() => {
-                didFlex = false;
-              }, 1000);
-            }
-
-          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) &&
-          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
-            console.log(`flex down`);
-            camera.position.y += Math.cos(camera.rotation.y) * 200;
-            camera.position.y += Math.sin(camera.rotation.y) * 200;
-            didFlex = true;
-            bird.changePose(2, camera);
-
-            setTimeout(() => {
-              didFlex = false;
-            }, 1000);
-          } else {
-            console.log(`neutral`);
-          }
-        }
-
-      }
-
-    } else {
-      tooClose = true;
-      console.log(`je staat te dicht`);
-
-      if (gameStarted) {
-        const tooCloseSection = document.getElementById(`too_close`);
-        tooCloseSection.className = `too_close display_page`;
-      }
-
-    }
   };
 
   const addGround = () => {
@@ -562,13 +448,95 @@ import Colors from './Colors.js';
     //mixer.update(0.01);
     bird.animate();
 
+    checkPoses();
+
+    movePlayer();
+
     if (!gameStarted) {
       menuPage();
     } else {
       startGame();
-      updateDistance();
     }
 
+  };
+
+  const checkPoses = () => {
+
+    const leftShoulder = playerPose.keypoints[5];
+    const rightShoulder = playerPose.keypoints[6];
+    const leftElbow = playerPose.keypoints[7];
+    const rightElbow = playerPose.keypoints[8];
+    const leftWrist = playerPose.keypoints[9];
+    const rightWrist = playerPose.keypoints[10];
+
+    //console.log(`nose: ${  playerPose.keypoints[1].position.y.toFixed(0)}`, `right shoulder x: ${  playerPose.keypoints[6].position.x.toFixed(0)}`);
+    //console.log(playerPose.keypoints);
+
+    // if (leftShoulder.x <= 300) { //|| rightShoulder.x <= 40
+    //   console.log(`left`);
+    // }
+
+    // if (rightShoulder.x >= 170) { //|| rightShoulder.x >= 170
+    //   console.log(`right`);
+    // }
+
+    //console.log((leftShoulder.x - rightShoulder.x).toFixed(0));
+
+    if (leftShoulder.position.x - rightShoulder.position.x <= 150) { //|| rightShoulder.x <= 40
+      //console.log(`ok`);
+
+      const tooCloseSection = document.getElementById(`too_close`);
+      tooClose = false;
+
+      tooCloseSection.className = `hide`;
+
+      if (!didFlex) {
+        if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.7) {
+
+          if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) &&
+          (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
+            
+            if (fatigue.value > 1) {
+              console.log(`flex up`);
+              camera.position.z -= 100;
+              fatigue.value -= 10;
+              didFlex = true;
+              flexedUp = true;
+              bird.changePose(0, camera);
+              showValue();
+
+              setTimeout(() => {
+                didFlex = false;
+              }, 1000);
+            }
+
+          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) &&
+          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
+            console.log(`flex down`);
+            camera.position.y += Math.cos(camera.rotation.y) * 200;
+            camera.position.y += Math.sin(camera.rotation.y) * 200;
+            didFlex = true;
+            bird.changePose(2, camera);
+
+            setTimeout(() => {
+              didFlex = false;
+            }, 1000);
+          } else {
+            console.log(`neutral`);
+          }
+        }
+      }
+
+    } else {
+      tooClose = true;
+      console.log(`je staat te dicht`);
+
+      if (gameStarted) {
+        const tooCloseSection = document.getElementById(`too_close`);
+        tooCloseSection.className = `too_close display_page`;
+      }
+
+    }
   };
 
   const fly = () => {
@@ -601,40 +569,45 @@ import Colors from './Colors.js';
   };
 
   const startGame = () => {
-    movePlayer();
+    // movePlayer();
+    updateDistance();
   };
+
+  const updateDistance = () => {
+    flexdistance += 1;
+    flexdistancelabel.innerHTML = flexdistance;
+  };
+
 
   const movePlayer = () => {
     // camera.position.y -= Math.cos(camera.rotation.y) * spd / 2;
     // camera.position.y -= Math.sin(camera.rotation.y) * spd / 2;
-    if (input.up === 1) {
+    if (input.left === 1) {
       if (camera.position.x === - 570) {
         camera.position.x = - 570;
       } else {
-        camera.rotation.z = 6.5;
         camera.position.x -= Math.cos(camera.rotation.y) * spd;
         camera.position.x -= Math.sin(camera.rotation.y) * spd;
       }
 
     }
-    if (input.down === 1) {
+    if (input.right === 1) {
       if (camera.position.x === 570) {
         camera.position.x = 570;
       } else {
-        camera.rotation.z = 25;
         camera.position.x += Math.cos(camera.rotation.y) * spd;
         camera.position.x += Math.sin(camera.rotation.y) * spd;
       }
     }
-    if (input.right === 1) {
-      camera.position.y += Math.cos(camera.rotation.y) * spd / 2;
-      camera.position.y += Math.sin(camera.rotation.y) * spd / 2;
+
+    if (input.up === 1) {
+      camera.position.y += Math.cos(camera.rotation.y) * spd;
+      camera.position.y += Math.sin(camera.rotation.y) * spd;
     }
-    if (input.left === 1) {
-      if (fatigue.value > 1) {
-        camera.position.z -= 30;
-        fatigue.value -= 10;
-      }
+    
+    if (input.down === 1) {
+      camera.position.y -= Math.cos(camera.rotation.y) * spd;
+      camera.position.y -= Math.sin(camera.rotation.y) * spd;
     }
   };
 
