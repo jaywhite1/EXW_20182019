@@ -4,7 +4,7 @@ import Bird from './classes/Bird.js';
 import 'babel-polyfill';
 import GLTFLoader from 'three-gltf-loader';
 
-import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
+import {drawKeypoints, drawSkeleton} from './demo_util';
 //const loader = new GLTFLoader();
 import Colors from './Colors.js';
 
@@ -26,11 +26,12 @@ import Colors from './Colors.js';
   const trees = new Set();
   let didFlex = false;
   let flexedUp = false;
+  let flexedDown = false;
   let tooClose = false;
   let gameStarted = false;
 
-  const videoWidth = 300;
-  const videoHeight = 200;
+  const videoWidth = 301;
+  const videoHeight = 225;
   const spd = 10;
   const input = {left: 0, right: 0, up: 0, down: 0};
   const fatigue = document.querySelector(`.fatigue`);
@@ -257,7 +258,7 @@ import Colors from './Colors.js';
       const imageScaleFactor = 0.55;
 
       // Stride, the larger, the smaller the output, the faster
-      const outputStride = 16;
+      const outputStride = 8;
 
       const poses = [];
 
@@ -293,7 +294,7 @@ import Colors from './Colors.js';
         if (score >= minPoseConfidence) {
           drawKeypoints(keypoints, minPartConfidence, ctx);
           drawSkeleton(keypoints, minPartConfidence, ctx);
-          drawBoundingBox(keypoints, ctx);
+          //drawBoundingBox(keypoints, ctx);
         }
       });
 
@@ -481,6 +482,8 @@ import Colors from './Colors.js';
 
     movePlayer();
 
+    checkFlexes();
+
     fly(delta);
     if (!gameStarted) {
       menuPage();
@@ -488,6 +491,29 @@ import Colors from './Colors.js';
       startGame();
     }
 
+  };
+
+  const checkFlexes = () => {
+
+    
+
+    if (flexedDown) {
+      camera.position.y += spd + 5;
+
+      setTimeout(() => {
+        flexedDown = false;
+      }, 1000);
+
+    }
+
+    if (flexedUp) {
+      camera.position.z -= spd * 2;
+
+      setTimeout(() => {
+        flexedUp = false;
+      }, 1000);
+
+    }
   };
 
   const checkPoses = () => {
@@ -506,22 +532,24 @@ import Colors from './Colors.js';
     //   console.log(leftShoulderOld.position.x.toFixed(0), leftShoulder.position.x.toFixed(0));
     // }, 1000);
 
-    //console.log(`left: ${  leftShoulder.position.y.toFixed(0)}`, `right x: ${  rightShoulder.position.x.toFixed(0)}`);
+    console.log(`left: ${  leftShoulder.position.x.toFixed(0)}`, `right: ${  rightShoulder.position.x.toFixed(0)}`);
+    //console.log(`diff: ${  rightShoulder.position.x.toFixed(0) - leftShoulder.position.x.toFixed(0)}`);
     //console.log(playerPose.keypoints);
 
-    if (rightShoulder.position.x - leftShoulder.position.x <= 150) { //|| rightShoulder.x <= 40
+    if (rightShoulder.position.x - leftShoulder.position.x <= 130) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
       const tooCloseSection = document.getElementById(`too_close`);
       tooClose = false;
+      themeSound.setVolume(1);
 
       tooCloseSection.className = `hide`;
 
-      if (leftShoulder.position.x < 100 && (leftShoulder.position.y > rightShoulder.position.y + 10)) {
-        console.log(`left`);
+      if (leftShoulder.position.y > rightShoulder.position.y + 15) {
+        //console.log(`left`);
         input.left = 1;
-      } else if (rightShoulder.position.x > 300 && (rightShoulder.position.y > leftShoulder.position.y + 10)) {
-        console.log(`right`);
+      } else if (rightShoulder.position.y > leftShoulder.position.y + 15) {
+        //console.log(`right`);
         input.right = 1;
       } else {
         input.left = 0;
@@ -531,12 +559,12 @@ import Colors from './Colors.js';
       if (!didFlex) {
         if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.7) {
 
-          if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) &&
-          (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
+          if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y && (leftWrist.position.x > leftElbow.position.x + 20)) &&
+          (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y && (rightWrist.position.x < rightElbow.position.x - 20))) {
 
             if (fatigue.value > 1) {
               console.log(`flex up`);
-              camera.position.z -= 100;
+              
               fatigue.value -= 10;
               didFlex = true;
               flexedUp = true;
@@ -545,25 +573,24 @@ import Colors from './Colors.js';
 
               setTimeout(() => {
                 didFlex = false;
-              }, 1000);
+              }, 800);
             }
 
-          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 40) &&
-          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 40)) {
+          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 20) &&
+          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20)) {
             console.log(`flex down`);
-            if (camera.position.y >= 2700) {
-              camera.position.y = 2700;
-            } else {
-              camera.position.y += spd * 20;
-            }
+
             didFlex = true;
+            flexedDown = true;
             bird.changePose(2, camera);
 
             setTimeout(() => {
               didFlex = false;
-            }, 1000);
+            }, 1500);
           } else {
             console.log(`neutral`);
+            flexedUp = false;
+            flexedDown = false;
           }
         }
       }
@@ -575,6 +602,10 @@ import Colors from './Colors.js';
       if (gameStarted) {
         const tooCloseSection = document.getElementById(`too_close`);
         tooCloseSection.className = `too_close display_page`;
+
+        themeSound.setVolume(.3);
+        input.left = 0;
+        input.right = 0;
       }
 
     }
@@ -635,7 +666,7 @@ import Colors from './Colors.js';
       if (camera.position.x === - 570) {
         camera.position.x = - 570;
       } else {
-        camera.position.x -= spd;
+        camera.position.x -= spd + 5;
       }
 
     }
@@ -643,13 +674,13 @@ import Colors from './Colors.js';
       if (camera.position.x === 570) {
         camera.position.x = 570;
       } else {
-        camera.position.x += spd;
+        camera.position.x += spd + 5;
       }
     }
 
     if (input.up === 1) {
-      camera.position.y += Math.cos(camera.rotation.y) * spd;
-      camera.position.y += Math.sin(camera.rotation.y) * spd;
+      camera.position.y += spd;
+      camera.position.y += spd;
     }
 
     if (input.down === 1) {

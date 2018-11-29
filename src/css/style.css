@@ -87,6 +87,8 @@ h1 {
   position: absolute;
   bottom: 0;
   z-index: 3;
+  filter: sepia(.8) brightness(1);
+  /* opacity: .8; */
 }
 
 .outputborder {
@@ -97,7 +99,7 @@ h1 {
   z-index: 4;
   background-image: url(../assets/bordercam.png);
   width: 34rem;
-  height: 23rem;
+  height: 25rem;
   background-size: cover;
   background-repeat: no-repeat;
 }
