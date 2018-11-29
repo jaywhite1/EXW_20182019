@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import * as posenet from '@tensorflow-models/posenet';
 import Bird from './classes/Bird.js';
 import 'babel-polyfill';
+import GLTFLoader from 'three-gltf-loader';
 
 import {drawBoundingBox, drawKeypoints, drawSkeleton} from './demo_util';
 //const loader = new GLTFLoader();
@@ -22,7 +23,7 @@ import Colors from './Colors.js';
   let flexdistance = 0;
   let bird, video, net, playerPose;
   const pose = 1;
-
+  const trees = new Set();
   let didFlex = false;
   let flexedUp = false;
   let tooClose = false;
@@ -38,11 +39,10 @@ import Colors from './Colors.js';
   const audioListener = new THREE.AudioListener();
   const themeSound = new THREE.Audio(audioListener);
   const audioLoader = new THREE.AudioLoader(loadingManager);
-  audioLoader.load(`./assets/flex.mp3`, function(buffer) {
+  audioLoader.load(`./assets/piggytribe.ogg`, function(buffer) {
     themeSound.setBuffer(buffer);
     themeSound.setLoop(true);
-    themeSound.setVolume(0.2);
-    //themeSound.play();
+    themeSound.setVolume(1);
   });
 
   const init = () => {
@@ -57,6 +57,7 @@ import Colors from './Colors.js';
     bindPage(); //posenet
     addGround();
     addParticles();
+    addTrees();
     //start de render loop
     loop();
   };
@@ -152,7 +153,7 @@ import Colors from './Colors.js';
     HEIGHT = window.innerHeight;
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x6f93ce, 0.0005);
+    scene.fog = new THREE.Fog(0xabaf99, 0, 2000);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 70;
@@ -180,7 +181,6 @@ import Colors from './Colors.js';
 
     container = document.getElementsByClassName(`world`);
     container[0].appendChild(renderer.domElement);
-    renderer.setClearColor(0x6f93ce, 1.0);
   };
 
   const setupCamera = async () => {
@@ -351,8 +351,35 @@ import Colors from './Colors.js';
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
+  const addTrees = () => {
+    const loader = new GLTFLoader(loadingManager);
+    loader.load(`https://yume.human-interactive.org/examples/forest/tree.glb`, gltf => {
+      const tree = gltf.scene.children[ 0 ];
+      for (let i = 0;i < 150;i ++) {
+        const scale = 2 + (Math.random() * 1.5);
+        const mesh = tree.clone();
+
+        mesh.scale.set(scale * 1.5, scale * 2, scale * 1.5);
+        mesh.rotation.x = (Math.random() * 0.2) - 0.1;
+        mesh.rotation.y = Math.random() * Math.PI;
+        mesh.rotation.z = (Math.random() * 0.2) - 0.1;
+
+        mesh.position.x = (Math.random() * 4000) - 2000;
+        mesh.position.y = - 400;
+        mesh.position.z = (Math.random() * 3000) - 3000;
+
+        // keep the way through the forest free of trees
+
+        if (mesh.position.x < 200 && mesh.position.x > 0) mesh.position.x += 200;
+        if (mesh.position.x > - 200 && mesh.position.x < 0) mesh.position.x -= 200;
+
+        scene.add(mesh);
+        trees.add(mesh);
+      }
+    });
+  };
   const addGround = () => {
-    const plane = new THREE.PlaneBufferGeometry(1600, 5000, 5, 5);
+    const plane = new THREE.PlaneBufferGeometry(2000, 20000, 9, 24);
     const position = plane.attributes.position;
 
     for (let i = 0;i < position.count;i ++) {
@@ -390,7 +417,7 @@ import Colors from './Colors.js';
 
     ground1.rotation.x = - Math.PI / 2;
     ground1.position.y = - 300;
-    ground1.position.z = 0;
+    ground1.position.z = - 10000;
 
     scene.add(ground1);
 
@@ -404,7 +431,7 @@ import Colors from './Colors.js';
     }));
     ground2.rotation.x = - Math.PI / 2;
     ground2.position.y = - 300;
-    ground2.position.z = - 5000;
+    ground2.position.z = - 30000;
 
     scene.add(ground2);
 
@@ -446,7 +473,6 @@ import Colors from './Colors.js';
     renderer.render(scene, camera);
     delta = clock.getDelta();
     checkCamPosition();
-    fly(delta);
     //mixer.update(0.01);
     bird.animate();
 
@@ -454,6 +480,7 @@ import Colors from './Colors.js';
 
     movePlayer();
 
+    fly(delta);
     if (!gameStarted) {
       menuPage();
     } else {
@@ -550,7 +577,11 @@ import Colors from './Colors.js';
   };
 
   const fly = () => {
-    speed = delta * 700;
+    if (!gameStarted) {
+      speed = delta * 200;
+    } else {
+      speed = delta * 700;
+    }
     //particles1.position.x = 80 * Math.cos(r * 2);
     //particles1.position.y = Math.sin(r * 2) + 100;
     particles1.position.x = 0;
@@ -568,8 +599,12 @@ import Colors from './Colors.js';
     ground1.position.z += speed;
     ground2.position.z += speed;
 
-    if (ground1.position.z - 3000 > camera.position.z) ground1.position.z -= 9600;
-    if (ground2.position.z - 3000 > camera.position.z) ground2.position.z -= 9400;
+    if (ground1.position.z - 10000 > camera.position.z) ground1.position.z -= 40000;
+    if (ground2.position.z - 10000 > camera.position.z) ground2.position.z -= 40000;
+    for (const tree of trees) {
+      tree.position.z += speed;
+      if (tree.position.z > camera.position.z) tree.position.z -= 3000;
+    }
   };
 
   const checkCamPosition = () => {
@@ -581,6 +616,7 @@ import Colors from './Colors.js';
   const startGame = () => {
     // movePlayer();
     updateDistance();
+    themeSound.play();
   };
 
   const updateDistance = () => {
@@ -596,8 +632,7 @@ import Colors from './Colors.js';
       if (camera.position.x === - 570) {
         camera.position.x = - 570;
       } else {
-        camera.position.x -= Math.cos(camera.rotation.x) * spd;
-        camera.position.x -= Math.sin(camera.rotation.x) * spd;
+        camera.position.x -= spd;
       }
 
     }
