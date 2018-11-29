@@ -89,6 +89,19 @@ h1 {
   z-index: 3;
 }
 
+.outputborder {
+  position: absolute;
+  bottom: 0;
+  margin-left: -2rem;
+  margin-bottom: 0;
+  z-index: 4;
+  background-image: url(../assets/bordercam.png);
+  width: 34rem;
+  height: 23rem;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
 .display_page {
   position: fixed;
   width: 100%;
@@ -134,6 +147,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  text-shadow: #fc0 1px 0 10px;
 }
 
 .te_dicht {
@@ -159,7 +173,7 @@ h1 {
 }
 
 .fatigue {
-  width: 90%;
+  width: 40%;
   height: 2rem;
   appearance: none;
 }
@@ -174,7 +188,7 @@ h1 {
 }
 
 .fatigue[value]::-webkit-progress-value {
-  background-color: #f7bb03;
+  background-color: #f5c260;
   border-radius: 2px;
 }
 

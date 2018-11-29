@@ -29,8 +29,8 @@ import Colors from './Colors.js';
   let tooClose = false;
   let gameStarted = false;
 
-  const videoWidth = 400;
-  const videoHeight = 300;
+  const videoWidth = 300;
+  const videoHeight = 200;
   const spd = 10;
   const input = {left: 0, right: 0, up: 0, down: 0};
   const fatigue = document.querySelector(`.fatigue`);
@@ -137,6 +137,7 @@ import Colors from './Colors.js';
       if (flexedUp) {
         menuPage[0].className = `hide`;
         gameStarted = true;
+        themeSound.play();
       }
     } else {
       menuPlay[0].innerHTML = `je staat te dicht`;
@@ -144,7 +145,7 @@ import Colors from './Colors.js';
     }
 
   };
-  
+
   const createScene = () => {
     // Get the width and the height of the screen,
     // use them to set up the aspect ratio of the camera
@@ -153,7 +154,7 @@ import Colors from './Colors.js';
     HEIGHT = window.innerHeight;
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xabaf99, 0, 2000);
+    scene.fog = new THREE.Fog(0xD59A38, 10, 2000);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 70;
@@ -239,7 +240,7 @@ import Colors from './Colors.js';
   };
 
   const detectPoseInRealTime = (video, net) => {
-    const canvas = document.getElementById(`output`);
+    const canvas = document.querySelector(`.output`);
     const ctx = canvas.getContext(`2d`);
     // since images are being fed from a webcam
     const flipHorizontal = true;
@@ -370,8 +371,8 @@ import Colors from './Colors.js';
 
         // keep the way through the forest free of trees
 
-        if (mesh.position.x < 200 && mesh.position.x > 0) mesh.position.x += 200;
-        if (mesh.position.x > - 200 && mesh.position.x < 0) mesh.position.x -= 200;
+        if (mesh.position.x < 570 && mesh.position.x > 0) mesh.position.x += 570;
+        if (mesh.position.x > - 570 && mesh.position.x < 0) mesh.position.x -= 570;
 
         scene.add(mesh);
         trees.add(mesh);
@@ -379,7 +380,7 @@ import Colors from './Colors.js';
     });
   };
   const addGround = () => {
-    const plane = new THREE.PlaneBufferGeometry(2000, 20000, 9, 24);
+    const plane = new THREE.PlaneBufferGeometry(3000, 20000, 9, 24);
     const position = plane.attributes.position;
 
     for (let i = 0;i < position.count;i ++) {
@@ -532,7 +533,7 @@ import Colors from './Colors.js';
 
           if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y) &&
           (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y)) {
-            
+
             if (fatigue.value > 1) {
               console.log(`flex up`);
               camera.position.z -= 100;
@@ -550,8 +551,11 @@ import Colors from './Colors.js';
           } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 40) &&
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 40)) {
             console.log(`flex down`);
-            camera.position.y += Math.cos(camera.rotation.y) * 200;
-            camera.position.y += Math.sin(camera.rotation.y) * 200;
+            if (camera.position.y >= 2700) {
+              camera.position.y = 2700;
+            } else {
+              camera.position.y += spd * 20;
+            }
             didFlex = true;
             bird.changePose(2, camera);
 
@@ -577,7 +581,7 @@ import Colors from './Colors.js';
   };
 
   const fly = () => {
-    if (!gameStarted) {
+    if (!gameStarted || tooClose) {
       speed = delta * 200;
     } else {
       speed = delta * 700;
@@ -616,7 +620,6 @@ import Colors from './Colors.js';
   const startGame = () => {
     // movePlayer();
     updateDistance();
-    themeSound.play();
   };
 
   const updateDistance = () => {
@@ -648,7 +651,7 @@ import Colors from './Colors.js';
       camera.position.y += Math.cos(camera.rotation.y) * spd;
       camera.position.y += Math.sin(camera.rotation.y) * spd;
     }
-    
+
     if (input.down === 1) {
       camera.position.y -= Math.cos(camera.rotation.y) * spd;
       camera.position.y -= Math.sin(camera.rotation.y) * spd;
