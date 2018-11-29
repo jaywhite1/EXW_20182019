@@ -97,13 +97,17 @@ h1 {
   z-index: 1;
 }
 
-.button {
+.menu_play {
   text-transform: uppercase;
   padding: 2rem 5rem;
   border: .5rem solid white;
   font-size: 4rem;
   font-weight: bold;
   color: black;
+}
+
+.menu_close {
+  border: .5rem solid red;
 }
 
 .menu_page {

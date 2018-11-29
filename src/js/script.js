@@ -131,6 +131,7 @@ import Colors from './Colors.js';
 
     if (!tooClose) {
       menuPlay[0].innerHTML = `Flex up to start`;
+      menuPlay[0].className = `menu_play`;
 
       if (flexedUp) {
         menuPage[0].className = `hide`;
@@ -138,6 +139,7 @@ import Colors from './Colors.js';
       }
     } else {
       menuPlay[0].innerHTML = `je staat te dicht`;
+      menuPlay[0].className = `menu_close menu_play`;
     }
 
   };
@@ -150,7 +152,7 @@ import Colors from './Colors.js';
     HEIGHT = window.innerHeight;
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x00ffff, 0.0005);
+    scene.fog = new THREE.FogExp2(0x6f93ce, 0.0005);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 70;
@@ -178,7 +180,7 @@ import Colors from './Colors.js';
 
     container = document.getElementsByClassName(`world`);
     container[0].appendChild(renderer.domElement);
-    renderer.setClearColor(0x00ffff, 1.0);
+    renderer.setClearColor(0x6f93ce, 1.0);
   };
 
   const setupCamera = async () => {
@@ -462,33 +464,41 @@ import Colors from './Colors.js';
 
   const checkPoses = () => {
 
-    const leftShoulder = playerPose.keypoints[5];
-    const rightShoulder = playerPose.keypoints[6];
-    const leftElbow = playerPose.keypoints[7];
-    const rightElbow = playerPose.keypoints[8];
-    const leftWrist = playerPose.keypoints[9];
-    const rightWrist = playerPose.keypoints[10];
+    const leftShoulder = playerPose.keypoints[6];
+    const rightShoulder = playerPose.keypoints[5];
+    const leftElbow = playerPose.keypoints[8];
+    const rightElbow = playerPose.keypoints[7];
+    const leftWrist = playerPose.keypoints[10];
+    const rightWrist = playerPose.keypoints[9];
 
-    //console.log(`nose: ${  playerPose.keypoints[1].position.y.toFixed(0)}`, `right shoulder x: ${  playerPose.keypoints[6].position.x.toFixed(0)}`);
+    // let leftShoulderOld;
+
+    // setTimeout(() => {
+    //   leftShoulderOld = leftShoulder;
+    //   console.log(leftShoulderOld.position.x.toFixed(0), leftShoulder.position.x.toFixed(0));
+    // }, 1000);
+
+    //console.log(`left: ${  leftShoulder.position.y.toFixed(0)}`, `right x: ${  rightShoulder.position.x.toFixed(0)}`);
     //console.log(playerPose.keypoints);
 
-    // if (leftShoulder.x <= 300) { //|| rightShoulder.x <= 40
-    //   console.log(`left`);
-    // }
-
-    // if (rightShoulder.x >= 170) { //|| rightShoulder.x >= 170
-    //   console.log(`right`);
-    // }
-
-    //console.log((leftShoulder.x - rightShoulder.x).toFixed(0));
-
-    if (leftShoulder.position.x - rightShoulder.position.x <= 150) { //|| rightShoulder.x <= 40
+    if (rightShoulder.position.x - leftShoulder.position.x <= 150) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
       const tooCloseSection = document.getElementById(`too_close`);
       tooClose = false;
 
       tooCloseSection.className = `hide`;
+
+      if (leftShoulder.position.x < 100 && (leftShoulder.position.y > rightShoulder.position.y + 10)) {
+        console.log(`left`);
+        input.left = 1;
+      } else if (rightShoulder.position.x > 300 && (rightShoulder.position.y > leftShoulder.position.y + 10)) {
+        console.log(`right`);
+        input.right = 1;
+      } else {
+        input.left = 0;
+        input.right = 0;
+      }
 
       if (!didFlex) {
         if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.7) {
@@ -510,8 +520,8 @@ import Colors from './Colors.js';
               }, 1000);
             }
 
-          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x < leftElbow.position.x - 30) &&
-          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x > rightElbow.position.x + 30)) {
+          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 40) &&
+          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 40)) {
             console.log(`flex down`);
             camera.position.y += Math.cos(camera.rotation.y) * 200;
             camera.position.y += Math.sin(camera.rotation.y) * 200;
@@ -529,7 +539,7 @@ import Colors from './Colors.js';
 
     } else {
       tooClose = true;
-      console.log(`je staat te dicht`);
+      //console.log(`je staat te dicht`);
 
       if (gameStarted) {
         const tooCloseSection = document.getElementById(`too_close`);
@@ -586,8 +596,8 @@ import Colors from './Colors.js';
       if (camera.position.x === - 570) {
         camera.position.x = - 570;
       } else {
-        camera.position.x -= Math.cos(camera.rotation.y) * spd;
-        camera.position.x -= Math.sin(camera.rotation.y) * spd;
+        camera.position.x -= Math.cos(camera.rotation.x) * spd;
+        camera.position.x -= Math.sin(camera.rotation.x) * spd;
       }
 
     }
@@ -595,8 +605,7 @@ import Colors from './Colors.js';
       if (camera.position.x === 570) {
         camera.position.x = 570;
       } else {
-        camera.position.x += Math.cos(camera.rotation.y) * spd;
-        camera.position.x += Math.sin(camera.rotation.y) * spd;
+        camera.position.x += spd;
       }
     }
 
