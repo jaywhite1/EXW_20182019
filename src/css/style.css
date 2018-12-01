@@ -187,6 +187,7 @@ h1 {
 
 .fatigue[value]::-webkit-progress-value {
   background-color: #f5c260;
+  background-image: linear-gradient(to right, #f4c242, #ffb700);
   border-radius: 2px;
 }
 

@@ -24,6 +24,7 @@ import Bird from './classes/Bird.js';
   const pose = 1;
   const trees = new Set();
   const enemies = new Set();
+  const clouds = new Set();
   let didFlex = false;
   let flexedUp = false;
   let flexedDown = false;
@@ -47,7 +48,12 @@ import Bird from './classes/Bird.js';
   const flexsound = new THREE.Audio(audioListener);
   audioLoader.load(`./assets/flex.mp3`, function(buffer) {
     flexsound.setBuffer(buffer);
-    flexsound.setVolume(0.5);
+    flexsound.setVolume(0.2);
+  });
+  const dashsound = new THREE.Audio(audioListener);
+  audioLoader.load(`./assets/dash.mp3`, function(buffer) {
+    dashsound.setBuffer(buffer);
+    dashsound.setVolume(0.2);
   });
   const init = () => {
 
@@ -63,6 +69,7 @@ import Bird from './classes/Bird.js';
     addParticles();
     addTrees();
     addEnemies();
+    addclouds();
     //start de render loop
     loop();
   };
@@ -564,7 +571,7 @@ import Bird from './classes/Bird.js';
 
             if (fatigue.value > 1) {
               console.log(`flex up`);
-
+              dashsound.play();
               fatigue.value -= 10;
               didFlex = true;
               flexedUp = true;
@@ -643,6 +650,10 @@ import Bird from './classes/Bird.js';
       tree.position.z += speed;
       if (tree.position.z > camera.position.z) tree.position.z -= 3000;
     }
+    for (const cloud of clouds) {
+      cloud.position.z += speed;
+      if (cloud.position.z > camera.position.z) cloud.position.z -= 3000;
+    }
     for (const enemy of enemies) {
 
       enemy.position.z += speed;
@@ -664,7 +675,28 @@ import Bird from './classes/Bird.js';
       }
     }
   };
+  const addclouds = () => {
+    const loader = new GLTFLoader(loadingManager);
+    loader.load(`../assets/cloud.glb`, gltf => {
+      const cloud = gltf.scene.children[ 0 ];
+      for (let i = 0;i < 10;i ++) {
+        const scale = 80 + Math.random();
 
+        const mesh = cloud.clone();
+        mesh.scale.set(scale, scale, scale);
+        mesh.rotation.x = 0;
+        mesh.rotation.y = Math.random() * Math.PI;
+        mesh.rotation.z = 0;
+
+        mesh.position.x = (Math.random() * 1500) - 750;
+        mesh.position.y = (Math.random() * 1000) + 2500;
+        mesh.position.z = (Math.random() * 3000) - 1500;
+        mesh.name = `enemy`;
+        scene.add(mesh);
+        clouds.add(mesh);
+      }
+    });
+  };
   const addEnemies = () => {
     const loader = new GLTFLoader(loadingManager);
     loader.load(`https://yume.human-interactive.org/examples/forest/flower.glb`, gltf => {
