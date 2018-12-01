@@ -7,9 +7,9 @@ let currentAnimation = 1;
 
 class Bird {
 
-  constructor(pose, scene) {
+  constructor(pose, scene, loadingManager) {
 
-    const loader = new GLTFLoader();
+    const loader = new GLTFLoader(loadingManager);
 
     loader.load(`./assets/birb.glb`, gltf => {
 

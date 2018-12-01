@@ -1,13 +1,12 @@
 import * as THREE from 'three';
 import * as posenet from '@tensorflow-models/posenet';
-import Bird from './classes/Bird.js';
 import 'babel-polyfill';
 import GLTFLoader from 'three-gltf-loader';
 
 import {drawKeypoints, drawSkeleton} from './demo_util';
 //const loader = new GLTFLoader();
 import Colors from './Colors.js';
-
+import Bird from './classes/Bird.js';
 {
   const flexdistancelabel = document.querySelector(`.score-value`);
   const loadingManager = new THREE.LoadingManager(() => {
@@ -180,7 +179,7 @@ import Colors from './Colors.js';
     window.addEventListener(`resize`, onWindowResize, false);
 
     renderer.setSize(WIDTH, HEIGHT);
-    renderer.shadowMap.eneabled = true;
+    renderer.shadowMap.enabled = true;
 
     container = document.getElementsByClassName(`world`);
     container[0].appendChild(renderer.domElement);
@@ -337,14 +336,12 @@ import Colors from './Colors.js';
     camera.add(ambientLight);
 
 
-  };loadingManager;
+  };
 
   const createBird = () => {
     bird = new Bird(pose, camera, loadingManager);
 
-    // bird.poses(1, scene);
-    //console.log(bird);
-    //bird.changePose(2, scene);
+
   };
 
   const onWindowResize = () => {
@@ -477,11 +474,10 @@ import Colors from './Colors.js';
     delta = clock.getDelta();
     checkCamPosition();
     //mixer.update(0.01);
-    bird.animate();
 
     checkPoses();
-
     movePlayer();
+    bird.animate();
     checkCollisions();
     checkFlexes();
     fly(delta);

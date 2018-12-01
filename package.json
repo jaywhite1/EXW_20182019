@@ -45,7 +45,7 @@
   "dependencies": {
     "@tensorflow-models/posenet": "^0.2.3",
     "@tensorflow/tfjs": "^0.13.5",
-    "three": "^0.99.0",
+    "three": "^0.98.0",
     "three-gltf-loader": "^1.98.0"
   }
 }
