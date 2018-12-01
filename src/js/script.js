@@ -44,7 +44,11 @@ import Bird from './classes/Bird.js';
     themeSound.setLoop(true);
     themeSound.setVolume(1);
   });
-
+  const flexsound = new THREE.Audio(audioListener);
+  audioLoader.load(`./assets/flex.mp3`, function(buffer) {
+    flexsound.setBuffer(buffer);
+    flexsound.setVolume(0.5);
+  });
   const init = () => {
 
     navigator.getUserMedia = navigator.getUserMedia ||
@@ -564,7 +568,7 @@ import Bird from './classes/Bird.js';
               fatigue.value -= 10;
               didFlex = true;
               flexedUp = true;
-              bird.changePose(0, camera);
+              bird.changePose(2, camera);
               showValue();
 
               setTimeout(() => {
@@ -578,8 +582,8 @@ import Bird from './classes/Bird.js';
 
             didFlex = true;
             flexedDown = true;
-            bird.changePose(2, camera);
-
+            bird.changePose(0, camera);
+            flexsound.play();
             setTimeout(() => {
               didFlex = false;
             }, 1500);
