@@ -24,12 +24,12 @@ import Colors from './Colors.js';
   let bird, video, net, playerPose;
   const pose = 1;
   const trees = new Set();
+  const enemies = new Set();
   let didFlex = false;
   let flexedUp = false;
   let flexedDown = false;
   let tooClose = false;
   let gameStarted = false;
-
   const videoWidth = 301;
   const videoHeight = 225;
   const spd = 10;
@@ -59,6 +59,7 @@ import Colors from './Colors.js';
     addGround();
     addParticles();
     addTrees();
+    addEnemies();
     //start de render loop
     loop();
   };
@@ -308,9 +309,9 @@ import Colors from './Colors.js';
 
 
   const createLights = () => {
-    hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, .9);
+    hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, 1);
     shadowLight = new THREE.DirectionalLight(0xffffff, .9);
-    ambientLight = new THREE.AmbientLight(0xdc8874, .4);
+    ambientLight = new THREE.AmbientLight(0xdc8874, .7);
 
         // Set the direction of the light
     shadowLight.position.set(150, 150, 450);
@@ -331,9 +332,9 @@ import Colors from './Colors.js';
     shadowLight.shadow.mapSize.width = 100;
     shadowLight.shadow.mapSize.height = 100;
 
-    scene.add(hemisphereLight);
-    scene.add(shadowLight);
-    scene.add(ambientLight);
+    camera.add(hemisphereLight);
+    camera.add(shadowLight);
+    camera.add(ambientLight);
 
 
   };loadingManager;
@@ -442,7 +443,7 @@ import Colors from './Colors.js';
   const addParticles = () => {
     const textureLoader = new THREE.TextureLoader(loadingManager).load(`../assets/firefly.png`);
     const material = new THREE.PointsMaterial({
-      size: 5,
+      size: 6,
       map: textureLoader,
       blending: THREE.AdditiveBlending,
       opacity: 0.8,
@@ -452,10 +453,10 @@ import Colors from './Colors.js';
     const geometry = new THREE.BufferGeometry();
     const points = [];
 
-    for (let i = 0;i < 50;i ++) {
+    for (let i = 0;i < 100;i ++) {
 
       points.push((Math.random() * 1500) - 750);
-      points.push((Math.random() * 1000) - 400);
+      points.push((Math.random() * 2000) + 100);
       points.push((Math.random() * 3000) - 1500);
 
     }
@@ -481,9 +482,8 @@ import Colors from './Colors.js';
     checkPoses();
 
     movePlayer();
-
+    checkCollisions();
     checkFlexes();
-
     fly(delta);
     if (!gameStarted) {
       menuPage();
@@ -495,7 +495,7 @@ import Colors from './Colors.js';
 
   const checkFlexes = () => {
 
-    
+
 
     if (flexedDown) {
       camera.position.y += spd + 5;
@@ -532,7 +532,7 @@ import Colors from './Colors.js';
     //   console.log(leftShoulderOld.position.x.toFixed(0), leftShoulder.position.x.toFixed(0));
     // }, 1000);
 
-    console.log(`left: ${  leftShoulder.position.x.toFixed(0)}`, `right: ${  rightShoulder.position.x.toFixed(0)}`);
+
     //console.log(`diff: ${  rightShoulder.position.x.toFixed(0) - leftShoulder.position.x.toFixed(0)}`);
     //console.log(playerPose.keypoints);
 
@@ -564,7 +564,7 @@ import Colors from './Colors.js';
 
             if (fatigue.value > 1) {
               console.log(`flex up`);
-              
+
               fatigue.value -= 10;
               didFlex = true;
               flexedUp = true;
@@ -616,13 +616,16 @@ import Colors from './Colors.js';
       speed = delta * 200;
     } else {
       speed = delta * 700;
+      camera.position.y -= Math.cos(camera.rotation.y) * spd / 10;
+      camera.position.y -= Math.sin(camera.rotation.y) * spd / 10;
     }
+
     //particles1.position.x = 80 * Math.cos(r * 2);
     //particles1.position.y = Math.sin(r * 2) + 100;
     particles1.position.x = 0;
-    particles1.position.y = 200;
+    particles1.position.y = 100;
     particles2.position.x = 0;
-    particles2.position.y = 200;
+    particles2.position.y = 500;
     // respawn particles if necessary
 
     particles1.position.z += speed;
@@ -640,8 +643,54 @@ import Colors from './Colors.js';
       tree.position.z += speed;
       if (tree.position.z > camera.position.z) tree.position.z -= 3000;
     }
+    for (const enemy of enemies) {
+
+      enemy.position.z += speed;
+
+      if (enemy.position.z > camera.position.z) enemy.position.z -= 3000;
+
+    }
   };
 
+  const checkCollisions = () => {
+    for (const enemy of enemies) {
+      if (enemy.position.y - 50 < camera.position.y && camera.position.y < enemy.position.y + 50) {
+
+        if (enemy.position.x - 50 < camera.position.x && camera.position.x < enemy.position.x + 50) {
+          if (enemy.position.z + 40  > camera.position.z - 205) {
+            console.log(`boem patat`);
+          }
+        }
+      }
+    }
+  };
+
+  const addEnemies = () => {
+    const loader = new GLTFLoader(loadingManager);
+    loader.load(`https://yume.human-interactive.org/examples/forest/flower.glb`, gltf => {
+      const enemy = gltf.scene.children[ 0 ];
+      for (let i = 0;i < 50;i ++) {
+        const scale = 1 + Math.random();
+
+        const mesh = enemy.clone();
+        mesh.scale.set(scale, scale, scale);
+
+        mesh.rotation.x = 0;
+        mesh.rotation.y = Math.random() * Math.PI;
+        mesh.rotation.z = 0;
+
+        mesh.position.x = (Math.random() * 1500) - 750;
+        mesh.position.y = (Math.random() * 2000) + 100;
+        mesh.position.z = (Math.random() * 3000) - 1500;
+        mesh.name = `enemy`;
+        scene.add(mesh);
+        enemies.add(mesh);
+
+      }
+
+    });
+
+  };
   const checkCamPosition = () => {
     if (camera.position.y <= - 250) {
       camera.position.y = 300;
@@ -660,8 +709,6 @@ import Colors from './Colors.js';
 
 
   const movePlayer = () => {
-    // camera.position.y -= Math.cos(camera.rotation.y) * spd / 2;
-    // camera.position.y -= Math.sin(camera.rotation.y) * spd / 2;
     if (input.left === 1) {
       if (camera.position.x === - 570) {
         camera.position.x = - 570;

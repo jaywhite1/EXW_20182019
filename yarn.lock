@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@johh/three-effectcomposer@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@johh/three-effectcomposer/-/three-effectcomposer-0.0.4.tgz#eac3823a57511d855f5f72cbec22adca70eda6aa"
+
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@protobufjs/aspromise/-/aspromise-1.1.2.tgz#9b8b0cc663d669a7d8f6f5d0893a14d348f30fbf"
@@ -5794,6 +5798,10 @@ postcss@^6.0.1:
     source-map "^0.6.1"
     supports-color "^4.4.0"
 
+postprocessing@^5.2.2:
+  version "5.2.2"
+  resolved "https://registry.yarnpkg.com/postprocessing/-/postprocessing-5.2.2.tgz#0b3033e4a5d6bdaba4192c3532132c7088dcebaf"
+
 prelude-ls@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
@@ -7030,9 +7038,9 @@ three-gltf-loader@^1.98.0:
   version "1.98.0"
   resolved "https://registry.yarnpkg.com/three-gltf-loader/-/three-gltf-loader-1.98.0.tgz#ed575a910ca5864bf44a64b84f8ec08d741e9399"
 
-three@^0.98.0:
-  version "0.98.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.98.0.tgz#11d4e3cca4b5d099c7de0ea5afa153b5d20cda84"
+three@^0.99.0:
+  version "0.99.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.99.0.tgz#65711fda7a16501da83948121437d824df1fea19"
 
 through2-filter@^2.0.0:
   version "2.0.0"
