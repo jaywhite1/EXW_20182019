@@ -4,6 +4,8 @@ import GLTFLoader from 'three-gltf-loader';
 let mixer, gltfGlobal, animation, idle;
 let currentAnimation = 1;
 //let playing = false;
+let up = true;
+let down = false;
 
 class Bird {
 
@@ -20,7 +22,6 @@ class Bird {
 
       gltfGlobal = gltf;
       this.poses(pose, scene, gltf);
-      //console.log(pose);
 
     });
 
@@ -61,6 +62,21 @@ class Bird {
   }
 
   animate() {
+    if (up) {
+      gltfGlobal.scene.position.y += 0.05;
+      gltfGlobal.scene.rotation.x += 0.003;
+      setTimeout(() => {
+        up = false;
+        down = true;
+      }, 400);
+    } else if (down) {
+      gltfGlobal.scene.position.y -= 0.05;
+      gltfGlobal.scene.rotation.x -= 0.003;
+      setTimeout(() => {
+        down = false;
+        up = true;
+      }, 400);
+    }
     if (currentAnimation === 1) {
       mixer.update(0.02);
     } else if (currentAnimation === 0) {

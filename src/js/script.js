@@ -27,6 +27,8 @@ import Bird from './classes/Bird.js';
   const clouds = new Set();
   let didFlex = false;
   let flexedUp = false;
+  let up = true;
+  let down = false;
   let flexedDown = false;
   let tooClose = false;
   let gameStarted = false;
@@ -35,6 +37,7 @@ import Bird from './classes/Bird.js';
   const spd = 10;
   const input = {left: 0, right: 0, up: 0, down: 0};
   const fatigue = document.querySelector(`.fatigue`);
+
 
     //load audio, best wel nog aparte klasse voor maken
   const audioListener = new THREE.AudioListener();
@@ -54,6 +57,11 @@ import Bird from './classes/Bird.js';
   audioLoader.load(`./assets/dash.mp3`, function(buffer) {
     dashsound.setBuffer(buffer);
     dashsound.setVolume(0.2);
+  });
+  const deadSound = new THREE.Audio(audioListener);
+  audioLoader.load(`./assets/dead.mp3`, function(buffer) {
+    deadSound.setBuffer(buffer);
+    deadSound.setVolume(0.2);
   });
   const init = () => {
 
@@ -152,7 +160,7 @@ import Bird from './classes/Bird.js';
         themeSound.play();
       }
     } else {
-      menuPlay[0].innerHTML = `je staat te dicht`;
+      menuPlay[0].innerHTML = `You're standing too close`;
       menuPlay[0].className = `menu_close menu_play`;
     }
 
@@ -351,7 +359,6 @@ import Bird from './classes/Bird.js';
 
   const createBird = () => {
     bird = new Bird(pose, camera, loadingManager);
-
 
   };
 
@@ -655,9 +662,22 @@ import Bird from './classes/Bird.js';
       if (cloud.position.z > camera.position.z) cloud.position.z -= 3000;
     }
     for (const enemy of enemies) {
-
+      if (up) {
+        enemy.position.y += 1.05;
+        enemy.rotation.x -= 0.003;
+        setTimeout(() => {
+          up = false;
+          down = true;
+        }, 600);
+      } else if (down) {
+        enemy.position.y -= 1.05;
+        enemy.rotation.x += 0.003;
+        setTimeout(() => {
+          down = false;
+          up = true;
+        }, 600);
+      }
       enemy.position.z += speed;
-
       if (enemy.position.z > camera.position.z) enemy.position.z -= 3000;
 
     }
@@ -669,7 +689,7 @@ import Bird from './classes/Bird.js';
 
         if (enemy.position.x - 50 < camera.position.x && camera.position.x < enemy.position.x + 50) {
           if (enemy.position.z + 40  > camera.position.z - 205) {
-            console.log(`boem patat`);
+            deadSound.play();
           }
         }
       }
@@ -699,25 +719,23 @@ import Bird from './classes/Bird.js';
   };
   const addEnemies = () => {
     const loader = new GLTFLoader(loadingManager);
-    loader.load(`https://yume.human-interactive.org/examples/forest/flower.glb`, gltf => {
+    loader.load(`../assets/enemy.glb`, gltf => {
       const enemy = gltf.scene.children[ 0 ];
       for (let i = 0;i < 50;i ++) {
-        const scale = 1 + Math.random();
+        const scale = 50 + Math.random(100);
 
         const mesh = enemy.clone();
         mesh.scale.set(scale, scale, scale);
 
-        mesh.rotation.x = 0;
-        mesh.rotation.y = Math.random() * Math.PI;
+        mesh.rotation.x = 1.5;
+        mesh.rotation.y = 0;
         mesh.rotation.z = 0;
 
         mesh.position.x = (Math.random() * 1500) - 750;
         mesh.position.y = (Math.random() * 2000) + 100;
         mesh.position.z = (Math.random() * 3000) - 1500;
-        mesh.name = `enemy`;
         scene.add(mesh);
         enemies.add(mesh);
-
       }
 
     });
