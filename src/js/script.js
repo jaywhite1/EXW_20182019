@@ -34,6 +34,8 @@ import Bird from './classes/Bird.js';
   let flexedDown = false;
   let tooClose = false;
   let gameStarted = false;
+  let hitSomething = false;
+  const gameOver = false;
   const videoWidth = 301;
   const videoHeight = 225;
   const spd = 10;
@@ -48,7 +50,7 @@ import Bird from './classes/Bird.js';
   audioLoader.load(`./assets/piggytribe.ogg`, function(buffer) {
     themeSound.setBuffer(buffer);
     themeSound.setLoop(true);
-    themeSound.setVolume(1);
+    themeSound.setVolume(0.6);
   });
   const flexsound = new THREE.Audio(audioListener);
   audioLoader.load(`./assets/flex.mp3`, function(buffer) {
@@ -499,30 +501,25 @@ import Bird from './classes/Bird.js';
     delta = clock.getDelta();
     checkCamPosition();
     //mixer.update(0.01);
-
+    bird.animate();
     checkPoses();
     movePlayer();
     bird.animate();
-    checkCollisions();
-    checkFlexes();
-    fly(delta);
-    boxCube.position.set(camera.position.x, camera.position.y - 22, camera.position.z - 110);
-    const originPoint = boxCube.position.clone();
-
-    for (let vertexIndex = 0;vertexIndex < boxCube.geometry.vertices.length;vertexIndex ++)
-    {
-      const localVertex = boxCube.geometry.vertices[vertexIndex].clone();
-      const globalVertex = localVertex.applyMatrix4(boxCube.matrix);
-      const directionVector = globalVertex.sub(boxCube.position);
-      const ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
-      const collisionResults = ray.intersectObjects(collidableMeshes);
-      if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length())
-        deadSound.play();
-    }
     if (!gameStarted) {
       menuPage();
     } else {
       startGame();
+    }
+    if (!gameOver) {
+      if (!hitSomething) {
+        checkCollisions();
+      }
+      checkFlexes();
+      fly(delta);
+      checkPoses();
+      movePlayer();
+    } else {
+      gameOverFunc();
     }
 
   };
@@ -724,17 +721,31 @@ import Bird from './classes/Bird.js';
   };
 
   const checkCollisions = () => {
-    for (const enemy of enemies) {
-      if (enemy.position.y - 50 < camera.position.y && camera.position.y < enemy.position.y + 50) {
+    boxCube.position.set(camera.position.x, camera.position.y - 22, camera.position.z - 110);
+    const originPoint = boxCube.position.clone();
 
-        if (enemy.position.x - 50 < camera.position.x && camera.position.x < enemy.position.x + 50) {
-          if (enemy.position.z + 40  > camera.position.z - 205) {
-            console.log(`nee`);
-          }
-        }
+    for (let vertexIndex = 0;vertexIndex < boxCube.geometry.vertices.length;vertexIndex ++)
+    {
+      const localVertex = boxCube.geometry.vertices[vertexIndex].clone();
+      const globalVertex = localVertex.applyMatrix4(boxCube.matrix);
+      const directionVector = globalVertex.sub(boxCube.position);
+      const ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
+      const collisionResults = ray.intersectObjects(collidableMeshes);
+      if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
+        deadSound.play();
+        const damageSection = document.getElementById(`damage`);
+        damageSection.className = `too_close display_page_damage`;
+        fatigue.value -= 10;
+        console.log(`hit`);
+
+        setTimeout(() => {
+          damageSection.className = `display_page_damage_hidden`;
+          hitSomething = false;
+        }, 1000);
       }
     }
   };
+
   const addclouds = () => {
     const loader = new GLTFLoader(loadingManager);
     loader.load(`../assets/cloud.glb`, gltf => {
@@ -793,6 +804,12 @@ import Bird from './classes/Bird.js';
     if (camera.position.y <= - 250) {
       camera.position.y = 300;
     }
+  };
+  const gameOverFunc = () => {
+    gameStarted = false;
+    fatigue.value = 0;
+    const gameOverSection = document.getElementById(`gameover`);
+    gameOverSection.className = `too_close display_page_dead`;
   };
 
   const startGame = () => {
