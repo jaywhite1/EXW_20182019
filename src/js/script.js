@@ -31,11 +31,15 @@ import Bird from './classes/Bird.js';
   let flexedUp = false;
   let up = true;
   let down = false;
+  let particles;
+  let particleGeometry;
+  const particlecount = 20;
+  let explosionPower = 1.06;
   let flexedDown = false;
   let tooClose = false;
   let gameStarted = false;
   let hitSomething = false;
-  const gameOver = false;
+  let gameOver = false;
   const videoWidth = 301;
   const videoHeight = 225;
   const spd = 10;
@@ -82,6 +86,7 @@ import Bird from './classes/Bird.js';
     addTrees();
     addEnemies();
     addclouds();
+    addExplosion();
     //start de render loop
     loop();
   };
@@ -302,11 +307,8 @@ import Bird from './classes/Bird.js';
       const minPoseConfidence = 0.4;
       // Show a body part only if probability more than
       const minPartConfidence = 0.6;
-
       ctx.clearRect(0, 0, videoWidth, videoHeight);
-
       const showVideo = true;
-
       if (showVideo) {
         ctx.save();
         ctx.scale(- 1, 1);
@@ -325,15 +327,53 @@ import Bird from './classes/Bird.js';
           //drawBoundingBox(keypoints, ctx);
         }
       });
-
       requestAnimationFrame(poseDetectionFrame);
     }
-
     poseDetectionFrame();
-
-
   };
 
+  const addExplosion = () => {
+    particleGeometry = new THREE.Geometry();
+    for (let i = 0;i < particlecount;i ++) {
+      const vertex = new THREE.Vector3();
+      particleGeometry.vertices.push(vertex);
+    }
+    const pMaterial = new THREE.ParticleBasicMaterial({
+      color: 0xfffafa,
+      size: 10
+    });
+    particles = new THREE.Points(particleGeometry, pMaterial);
+    scene.add(particles);
+    particles.visible = false;
+  };
+
+  const explode = () => {
+    particles.position.y = camera.position.y - 22;
+    particles.position.z = camera.position.z - 110;
+    particles.position.x = camera.position.x;
+    for (let i = 0;i < particlecount;i ++) {
+      const vertex = new THREE.Vector3();
+      vertex.x = - 10 + Math.random() * 10.4;
+      vertex.y = - 10 + Math.random() * 10.4;
+      vertex.z = - 10 + Math.random() * 10.4;
+      particleGeometry.vertices[i] = vertex;
+    }
+    explosionPower = 1.07;
+    particles.visible = true;
+  };
+
+  const doExplosionLogic = () => {
+    if (!particles.visible) return;
+    for (let i = 0;i < particlecount;i ++) {
+      particleGeometry.vertices[i].multiplyScalar(explosionPower);
+    }
+    if (explosionPower > 1.005) {
+      explosionPower -= 0.001;
+    } else {
+      particles.visible = false;
+    }
+    particleGeometry.verticesNeedUpdate = true;
+  };
 
   const createLights = () => {
     hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, 1);
@@ -505,6 +545,7 @@ import Bird from './classes/Bird.js';
     checkPoses();
     movePlayer();
     bird.animate();
+    doExplosionLogic();
     if (!gameStarted) {
       menuPage();
     } else {
@@ -733,6 +774,7 @@ import Bird from './classes/Bird.js';
       const collisionResults = ray.intersectObjects(collidableMeshes);
       if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
         deadSound.play();
+        explode();
         const damageSection = document.getElementById(`damage`);
         damageSection.className = `too_close display_page_damage`;
         fatigue.value -= 10;
@@ -802,7 +844,7 @@ import Bird from './classes/Bird.js';
   };
   const checkCamPosition = () => {
     if (camera.position.y <= - 250) {
-      camera.position.y = 300;
+      gameOver = true;
     }
   };
   const gameOverFunc = () => {
@@ -818,8 +860,10 @@ import Bird from './classes/Bird.js';
   };
 
   const updateDistance = () => {
-    flexdistance += 1;
-    flexdistancelabel.innerHTML = flexdistance;
+    if (!gameOver) {
+      flexdistance += 1;
+      flexdistancelabel.innerHTML = flexdistance;
+    }
   };
 
 
