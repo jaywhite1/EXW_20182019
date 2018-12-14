@@ -27,6 +27,7 @@ import Bird from './classes/Bird.js';
   const collidableMeshes = [];
   const enemyCubes = [];
   const clouds = new Set();
+  const maxHeight = 2500;
   let didFlex = false;
   let flexedUp = false;
   let up = true;
@@ -126,18 +127,21 @@ import Bird from './classes/Bird.js';
       input.right = 1;
       break;
     case 37:
-      if (fatigue.value > 1) {
-        console.log(`left`);
+      if (fatigue.value > 1  && camera.position.y <= maxHeight) {
+        console.log(camera.position.y);
         bird.changePose(0, camera);
+        flexedDown = true;
       }
       break;
     case 38:
       console.log(`up`);
       bird.changePose(1, camera);
+      
       break;
     case 39:
       console.log(`right`);
       bird.changePose(2, camera);
+      flexedUp = true;
       break;
     case 40:
       console.log(`down`);
@@ -544,8 +548,9 @@ import Bird from './classes/Bird.js';
     bird.animate();
     checkPoses();
     movePlayer();
-    bird.animate();
     doExplosionLogic();
+
+    console.log(camera.position.x);
     if (!gameStarted) {
       menuPage();
     } else {
@@ -567,14 +572,12 @@ import Bird from './classes/Bird.js';
 
   const checkFlexes = () => {
 
-
-
     if (flexedDown) {
       camera.position.y += spd + 5;
 
       setTimeout(() => {
         flexedDown = false;
-      }, 1000);
+      }, 400);
 
     }
 
@@ -649,7 +652,7 @@ import Bird from './classes/Bird.js';
             }
 
           } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 20) &&
-          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20)) {
+          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20) && camera.position.y <= maxHeight) {
             console.log(`flex down`);
 
             didFlex = true;
@@ -658,7 +661,7 @@ import Bird from './classes/Bird.js';
             flexsound.play();
             setTimeout(() => {
               didFlex = false;
-            }, 1500);
+            }, 1000);
           } else {
             console.log(`neutral`);
             flexedUp = false;
@@ -687,9 +690,17 @@ import Bird from './classes/Bird.js';
     if (!gameStarted || tooClose) {
       speed = delta * 200;
     } else {
-      speed = delta * 700;
-      camera.position.y -= Math.cos(camera.rotation.y) * spd / 7;
-      camera.position.y -= Math.sin(camera.rotation.y) * spd / 7;
+
+      if (fatigue.value >= 1) {
+        speed = delta * 700;
+        camera.position.y -= Math.cos(camera.rotation.y) * spd / 7;
+        camera.position.y -= Math.sin(camera.rotation.y) * spd / 7;
+      } else {
+        speed = delta * 700;
+        camera.position.y -= Math.cos(camera.rotation.y) * spd;
+        camera.position.y -= Math.sin(camera.rotation.y) * spd;
+      }
+      
     }
 
     //particles1.position.x = 80 * Math.cos(r * 2);
@@ -773,17 +784,24 @@ import Bird from './classes/Bird.js';
       const ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
       const collisionResults = ray.intersectObjects(collidableMeshes);
       if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
-        deadSound.play();
-        explode();
+
+        hitSomething = true;
+        
         const damageSection = document.getElementById(`damage`);
         damageSection.className = `too_close display_page_damage`;
-        fatigue.value -= 10;
+        fatigue.value -= 2;
         console.log(`hit`);
 
         setTimeout(() => {
           damageSection.className = `display_page_damage_hidden`;
           hitSomething = false;
         }, 1000);
+      }
+
+      if (hitSomething) {
+        fatigue.value -= 1;
+        deadSound.play();
+        explode();
       }
     }
   };
@@ -868,7 +886,7 @@ import Bird from './classes/Bird.js';
 
 
   const movePlayer = () => {
-    if (input.left === 1) {
+    if (input.left === 1 && camera.position.x >= - 610) {
       if (camera.position.x === - 570) {
         camera.position.x = - 570;
       } else {
@@ -876,7 +894,7 @@ import Bird from './classes/Bird.js';
       }
 
     }
-    if (input.right === 1) {
+    if (input.right === 1 && camera.position.x <= 610) {
       if (camera.position.x === 570) {
         camera.position.x = 570;
       } else {
