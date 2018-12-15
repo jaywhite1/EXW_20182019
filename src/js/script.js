@@ -19,7 +19,7 @@ import Bird from './classes/Bird.js';
 
   let scene,
     WIDTH, HEIGHT,
-    camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, particles1, particles2, speed, clock, delta, hemisphereLight, shadowLight, ambientLight;
+    camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, particles1, particles2, speed, clock, delta, hemisphereLight, shadowLight, ambientLight, turnSpeed;
   let flexdistance = 0;
   let bird, video, net, playerPose;
   const pose = 1;
@@ -572,11 +572,11 @@ import Bird from './classes/Bird.js';
   const checkFlexes = () => {
 
     if (flexedDown) {
-      camera.position.y += spd + 5;
+      camera.position.y += spd + 10;
 
       setTimeout(() => {
         flexedDown = false;
-      }, 400);
+      }, 600);
 
     }
 
@@ -610,7 +610,7 @@ import Bird from './classes/Bird.js';
     //console.log(`diff: ${  rightShoulder.position.x.toFixed(0) - leftShoulder.position.x.toFixed(0)}`);
     //console.log(playerPose.keypoints);
 
-    if (rightShoulder.position.x - leftShoulder.position.x <= 130) { //|| rightShoulder.x <= 40
+    if (rightShoulder.position.x - leftShoulder.position.x <= 110) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
       const tooCloseSection = document.getElementById(`too_close`);
@@ -619,15 +619,15 @@ import Bird from './classes/Bird.js';
 
       tooCloseSection.className = `hide`;
 
-      if (leftShoulder.position.y > rightShoulder.position.y + 15) {
-        //console.log(`left`);
-        input.left = 1;
-      } else if (rightShoulder.position.y > leftShoulder.position.y + 15) {
-        //console.log(`right`);
-        input.right = 1;
-      } else {
-        input.left = 0;
-        input.right = 0;
+      turnSpeed = leftShoulder.position.y - rightShoulder.position.y;
+      console.log(Math.round(turnSpeed));
+      
+      if (turnSpeed > 4 && camera.position.x >= - 610) {
+        camera.position.x -= (turnSpeed);
+      }
+
+      if (turnSpeed < - 4 && camera.position.x <= 610) {
+        camera.position.x += - (turnSpeed);
       }
 
       if (!didFlex) {
@@ -835,12 +835,13 @@ import Bird from './classes/Bird.js';
       }
     });
   };
+
   const addEnemies = () => {
     const loader = new GLTFLoader(loadingManager);
     loader.load(`../assets/enemy.glb`, gltf => {
       const enemy = gltf.scene.children[ 0 ];
       for (let i = 0;i < 10;i ++) {
-        const scale = 35 + Math.random(100);
+        const scale = 80;
 
         const mesh = enemy.clone();
         mesh.scale.set(scale, scale, scale);
@@ -853,10 +854,10 @@ import Bird from './classes/Bird.js';
         mesh.position.y = (Math.random() * 2000) + 100;
         mesh.position.z = (Math.random() * 3000) - 1500;
 
-        const cubeGeometry = new THREE.CubeGeometry(70, 200, 100, 1, 1, 1);
+        const cubeGeometry = new THREE.CubeGeometry(140, 400, 100, 1, 1, 1);
         const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
         enemyCube = new THREE.Mesh(cubeGeometry, wireMaterial);
-        enemyCube.position.set(mesh.position.x, mesh.position.y + 100, mesh.position.z);
+        enemyCube.position.set(mesh.position.x, mesh.position.y + 200, mesh.position.z);
         scene.add(enemyCube);
         collidableMeshes.push(enemyCube);
         enemyCubes.push(enemyCube);
