@@ -7,8 +7,8 @@ import {drawKeypoints, drawSkeleton} from './demo_util';
 //const loader = new GLTFLoader();
 import Colors from './Colors.js';
 import Bird from './classes/Bird.js';
+
 {
-  const flexdistancelabel = document.querySelector(`.score-value`);
   const loadingManager = new THREE.LoadingManager(() => {
     const loadingScreen = document.querySelector(`.loading-screen`);
     console.log(loadingScreen);
@@ -16,6 +16,7 @@ import Bird from './classes/Bird.js';
     // optional: remove loader from DOM via event listener
     loadingScreen.addEventListener(`transitionend`, onTransitionEnd);
   });
+
   let scene,
     WIDTH, HEIGHT,
     camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, particles1, particles2, speed, clock, delta, hemisphereLight, shadowLight, ambientLight;
@@ -150,7 +151,7 @@ import Bird from './classes/Bird.js';
   });
 
   const showValue = () => {
-    console.log(fatigue.value);
+    //console.log(fatigue.value);
     if (fatigue.value < 1) {
       console.log(`dash bar is leeg`);
     }
@@ -161,16 +162,15 @@ import Bird from './classes/Bird.js';
     const menuPage = document.getElementsByClassName(`menu_page`);
     const menuPlay = document.getElementsByClassName(`menu_play`);
 
-    menuPlay[0].addEventListener(`click`, () => { menuPage[0].className = `hide`;});
+    menuPlay[0].addEventListener(`click`, () => { menuPage[0].className = `hide menu_page`;});
 
     if (!tooClose) {
       menuPlay[0].innerHTML = `Flex up to start`;
       menuPlay[0].className = `menu_play`;
 
       if (flexedUp) {
-        menuPage[0].className = `hide`;
-        gameStarted = true;
-        themeSound.play();
+        menuPage[0].className = `hide menu_page`;
+        startGame();
       }
     } else {
       menuPlay[0].innerHTML = `You're standing too close`;
@@ -550,7 +550,7 @@ import Bird from './classes/Bird.js';
     movePlayer();
     doExplosionLogic();
 
-    console.log(camera.position.x);
+    //console.log(camera.position.x);
     if (!gameStarted) {
       menuPage();
     } else {
@@ -562,7 +562,6 @@ import Bird from './classes/Bird.js';
       }
       checkFlexes();
       fly(delta);
-      checkPoses();
       movePlayer();
     } else {
       gameOverFunc();
@@ -586,7 +585,7 @@ import Bird from './classes/Bird.js';
 
       setTimeout(() => {
         flexedUp = false;
-      }, 1000);
+      }, 1500);
 
     }
   };
@@ -632,7 +631,7 @@ import Bird from './classes/Bird.js';
       }
 
       if (!didFlex) {
-        if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.7) {
+        if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.6) {
 
           if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y && (leftWrist.position.x > leftElbow.position.x + 20)) &&
           (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y && (rightWrist.position.x < rightElbow.position.x - 20))) {
@@ -640,25 +639,27 @@ import Bird from './classes/Bird.js';
             if (fatigue.value > 1) {
               console.log(`flex up`);
               dashsound.play();
-              fatigue.value -= 10;
+              fatigue.value -= 20;
               didFlex = true;
               flexedUp = true;
               bird.changePose(2, camera);
-              showValue();
 
               setTimeout(() => {
                 didFlex = false;
-              }, 800);
+              }, 1500);
             }
 
-          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 20) &&
-          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20) && camera.position.y <= maxHeight) {
+          } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 20 && leftWrist.position.y > leftShoulder.position.y) &&
+          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20 && rightWrist.position.y > rightShoulder.position.y) && camera.position.y <= maxHeight) {
             console.log(`flex down`);
 
             didFlex = true;
             flexedDown = true;
             bird.changePose(0, camera);
             flexsound.play();
+
+            fatigue.value -= 5;
+
             setTimeout(() => {
               didFlex = false;
             }, 1000);
@@ -674,7 +675,7 @@ import Bird from './classes/Bird.js';
       tooClose = true;
       //console.log(`je staat te dicht`);
 
-      if (gameStarted) {
+      if (gameStarted && !gameOver) {
         const tooCloseSection = document.getElementById(`too_close`);
         tooCloseSection.className = `too_close display_page`;
 
@@ -783,19 +784,25 @@ import Bird from './classes/Bird.js';
       const directionVector = globalVertex.sub(boxCube.position);
       const ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
       const collisionResults = ray.intersectObjects(collidableMeshes);
+
       if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
-
         hitSomething = true;
-        
-        const damageSection = document.getElementById(`damage`);
-        damageSection.className = `too_close display_page_damage`;
-        fatigue.value -= 2;
-        console.log(`hit`);
 
-        setTimeout(() => {
-          damageSection.className = `display_page_damage_hidden`;
-          hitSomething = false;
-        }, 1000);
+        if (flexedUp) {
+          fatigue.value = 100;
+        } else {
+          
+          const damageSection = document.getElementById(`damage`);
+          damageSection.className = `too_close display_page_damage`;
+          fatigue.value -= 2;
+          console.log(`hit`);
+  
+          setTimeout(() => {
+            damageSection.className = `display_page_damage_hidden`;
+            hitSomething = false;
+          }, 1000);
+        }
+        
       }
 
       if (hitSomething) {
@@ -832,7 +839,7 @@ import Bird from './classes/Bird.js';
     const loader = new GLTFLoader(loadingManager);
     loader.load(`../assets/enemy.glb`, gltf => {
       const enemy = gltf.scene.children[ 0 ];
-      for (let i = 0;i < 50;i ++) {
+      for (let i = 0;i < 10;i ++) {
         const scale = 35 + Math.random(100);
 
         const mesh = enemy.clone();
@@ -862,44 +869,77 @@ import Bird from './classes/Bird.js';
   };
   const checkCamPosition = () => {
     if (camera.position.y <= - 250) {
-      gameOver = true;
+      gameOverFunc();
     }
   };
+
   const gameOverFunc = () => {
     gameStarted = false;
+    gameOver = true;
     fatigue.value = 0;
+    themeSound.setVolume(.3);
     const gameOverSection = document.getElementById(`gameover`);
+    const gameOverScore = document.querySelector(`.gameover_score`);
+    const playAgain = document.querySelector(`.play_again`);
     gameOverSection.className = `too_close display_page_dead`;
+    gameOverScore.innerHTML = Math.round(flexdistance);
+    playAgain.addEventListener(`click`, restartGame);
+
+    if (flexedDown) {
+      restartGame();
+    }
+
   };
 
   const startGame = () => {
+    gameStarted = true;
+    themeSound.play();
     // movePlayer();
     updateDistance();
+    showValue();
+  };
+
+  const restartGame = () => {
+    gameOver = false;
+    gameStarted = true;
+    flexdistance = 0;
+    themeSound.setVolume(1);
+
+    camera.position.y = 400;
+    fatigue.value = 100;
+
+    const gameOverSection = document.getElementById(`gameover`);
+    gameOverSection.className = `hide`;
+
+    console.log(`restart`);
+
+    if (!gameStarted) {
+      menuPage();
+    } else {
+      startGame();
+    }
   };
 
   const updateDistance = () => {
-    if (!gameOver) {
+    if (!gameOver && !tooClose) {
       flexdistance += 1;
-      flexdistancelabel.innerHTML = flexdistance;
+    } else if (!gameOver && tooClose) {
+      flexdistance += 0.1;
+      
     }
+
+    const flexdistancelabel = document.querySelector(`.score-value`);
+    flexdistancelabel.innerHTML = Math.round(flexdistance);
   };
 
 
   const movePlayer = () => {
     if (input.left === 1 && camera.position.x >= - 610) {
-      if (camera.position.x === - 570) {
-        camera.position.x = - 570;
-      } else {
-        camera.position.x -= spd + 5;
-      }
+      camera.position.x -= spd;
 
     }
     if (input.right === 1 && camera.position.x <= 610) {
-      if (camera.position.x === 570) {
-        camera.position.x = 570;
-      } else {
-        camera.position.x += spd + 5;
-      }
+      camera.position.x += spd;
     }
 
     if (input.up === 1) {

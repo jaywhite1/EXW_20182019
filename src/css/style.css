@@ -198,7 +198,31 @@ h1 {
   color: white;
   text-transform: uppercase;
   font-weight: bold;
+  font-size: 2rem;
+
+}
+
+.died_title {
   font-size: 5rem;
+  margin-bottom: 2rem;
+}
+
+.play_again {
+  padding: 1rem;
+  border: .1rem solid white;
+  margin-top: 3rem;
+  font-size: 3rem;
+}
+
+.play_again:hover {
+  background-color: white;
+  color: black;
+  cursor: pointer;
+}
+
+.gameover_score {
+  font-size: 4rem;
+  margin-top: 1rem;
 }
 
 .healthbar {
