@@ -545,7 +545,7 @@ import Bird from './classes/Bird.js';
     delta = clock.getDelta();
     checkCamPosition();
     //mixer.update(0.01);
-    bird.animate();
+    bird.animate(camera.position.y);
     checkPoses();
     movePlayer();
     doExplosionLogic();
@@ -562,6 +562,8 @@ import Bird from './classes/Bird.js';
       }
       checkFlexes();
       fly(delta);
+      bird.tilt(input.left, input.right);
+      checkPoses();
       movePlayer();
     } else {
       gameOverFunc();
@@ -610,7 +612,7 @@ import Bird from './classes/Bird.js';
     //console.log(`diff: ${  rightShoulder.position.x.toFixed(0) - leftShoulder.position.x.toFixed(0)}`);
     //console.log(playerPose.keypoints);
 
-    if (rightShoulder.position.x - leftShoulder.position.x <= 110) { //|| rightShoulder.x <= 40
+    if (rightShoulder.position.x - leftShoulder.position.x <= 100) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
       const tooCloseSection = document.getElementById(`too_close`);

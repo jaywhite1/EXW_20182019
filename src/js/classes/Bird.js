@@ -61,7 +61,43 @@ class Bird {
 
   }
 
-  animate() {
+  tilt(left, right) {
+    if (left === 0 && right === 0) {
+      console.log(gltfGlobal.scene.rotation.z);
+      if (gltfGlobal.scene.rotation.z < 0) {
+        if (gltfGlobal.scene.rotation.z === 0) {
+          gltfGlobal.scene.rotation.z === 0;
+        } else {
+          gltfGlobal.scene.rotation.z += 0.03;
+        }
+
+      }
+      if (gltfGlobal.scene.rotation.z >  0) {
+        if (gltfGlobal.scene.rotation.z === 0) {
+          gltfGlobal.scene.rotation.z === 0;
+        } else {
+          gltfGlobal.scene.rotation.z -= 0.03;
+        }
+      }
+    }
+    if (left === 1) {
+      if (gltfGlobal.scene.rotation.z <= - 0.6) {
+        gltfGlobal.scene.rotation.z = - 0.6;
+      } else {
+        gltfGlobal.scene.rotation.z -= 0.03;
+      }
+    } else if (right === 1) {
+      if (gltfGlobal.scene.rotation.z >=  0.6) {
+        gltfGlobal.scene.rotation.z =  0.6;
+      } else {
+        gltfGlobal.scene.rotation.z += 0.03;
+      }
+    }
+
+
+  }
+  animate(camera) {
+    gltfGlobal.scene.rotation.x = camera / 5000 - 0.5;
     if (up) {
       gltfGlobal.scene.position.y += 0.05;
       gltfGlobal.scene.rotation.x += 0.003;
