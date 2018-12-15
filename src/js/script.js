@@ -136,7 +136,7 @@ import Bird from './classes/Bird.js';
     case 38:
       console.log(`up`);
       bird.changePose(1, camera);
-      
+
       break;
     case 39:
       console.log(`right`);
@@ -545,7 +545,7 @@ import Bird from './classes/Bird.js';
     delta = clock.getDelta();
     checkCamPosition();
     //mixer.update(0.01);
-    bird.animate();
+    bird.animate(camera.position.y);
     checkPoses();
     movePlayer();
     doExplosionLogic();
@@ -562,6 +562,7 @@ import Bird from './classes/Bird.js';
       }
       checkFlexes();
       fly(delta);
+      bird.tilt(input.left, input.right);
       checkPoses();
       movePlayer();
     } else {
@@ -621,11 +622,11 @@ import Bird from './classes/Bird.js';
       tooCloseSection.className = `hide`;
 
       if (leftShoulder.position.y > rightShoulder.position.y + 15) {
-        //console.log(`left`);
         input.left = 1;
+        input.right = 0;
       } else if (rightShoulder.position.y > leftShoulder.position.y + 15) {
-        //console.log(`right`);
         input.right = 1;
+        input.left = 0;
       } else {
         input.left = 0;
         input.right = 0;
@@ -700,7 +701,7 @@ import Bird from './classes/Bird.js';
         camera.position.y -= Math.cos(camera.rotation.y) * spd;
         camera.position.y -= Math.sin(camera.rotation.y) * spd;
       }
-      
+
     }
 
     //particles1.position.x = 80 * Math.cos(r * 2);
@@ -786,7 +787,7 @@ import Bird from './classes/Bird.js';
       if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
 
         hitSomething = true;
-        
+
         const damageSection = document.getElementById(`damage`);
         damageSection.className = `too_close display_page_damage`;
         fatigue.value -= 2;
@@ -889,16 +890,24 @@ import Bird from './classes/Bird.js';
     if (input.left === 1 && camera.position.x >= - 610) {
       if (camera.position.x === - 570) {
         camera.position.x = - 570;
+        input.left = 1;
+        input.right = 0;
       } else {
         camera.position.x -= spd + 5;
+        input.left = 1;
+        input.right = 0;
       }
 
     }
     if (input.right === 1 && camera.position.x <= 610) {
       if (camera.position.x === 570) {
         camera.position.x = 570;
+        input.left = 0;
+        input.right = 1;
       } else {
         camera.position.x += spd + 5;
+        input.left = 0;
+        input.right = 1;
       }
     }
 
