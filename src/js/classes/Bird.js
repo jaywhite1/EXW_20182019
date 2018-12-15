@@ -57,13 +57,13 @@ class Bird {
       currentAnimation = 1;
     }, 400);
 
-    console.log(currentAnimation);
+    //console.log(currentAnimation);
 
   }
 
-  tilt(left, right) {
+  tilt(left, right, turnSpeed) {
     if (left === 0 && right === 0) {
-      console.log(gltfGlobal.scene.rotation.z);
+      console.log(turnSpeed / 14);
       if (gltfGlobal.scene.rotation.z < 0) {
         if (gltfGlobal.scene.rotation.z === 0) {
           gltfGlobal.scene.rotation.z === 0;
@@ -81,21 +81,20 @@ class Bird {
       }
     }
     if (left === 1) {
-      if (gltfGlobal.scene.rotation.z <= - 0.6) {
-        gltfGlobal.scene.rotation.z = - 0.6;
+      if (gltfGlobal.scene.rotation.z <= - turnSpeed / 100) {
+        gltfGlobal.scene.rotation.z = - turnSpeed / 100;
       } else {
         gltfGlobal.scene.rotation.z -= 0.03;
       }
     } else if (right === 1) {
-      if (gltfGlobal.scene.rotation.z >=  0.6) {
-        gltfGlobal.scene.rotation.z =  0.6;
+      if (gltfGlobal.scene.rotation.z >= - turnSpeed / 100) {
+        gltfGlobal.scene.rotation.z =  - turnSpeed / 100;
       } else {
         gltfGlobal.scene.rotation.z += 0.03;
       }
     }
-
-
   }
+
   animate(camera) {
     gltfGlobal.scene.rotation.x = camera / 5000 - 0.5;
     if (up) {

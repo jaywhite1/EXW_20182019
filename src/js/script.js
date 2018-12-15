@@ -562,7 +562,7 @@ import Bird from './classes/Bird.js';
       }
       checkFlexes();
       fly(delta);
-      bird.tilt(input.left, input.right);
+      
       checkPoses();
       movePlayer();
     } else {
@@ -624,13 +624,17 @@ import Bird from './classes/Bird.js';
       turnSpeed = leftShoulder.position.y - rightShoulder.position.y;
       console.log(Math.round(turnSpeed));
       
-      if (turnSpeed > 4 && camera.position.x >= - 610) {
-        camera.position.x -= (turnSpeed);
+      if (turnSpeed > 10 && camera.position.x >= - 610) {
+        camera.position.x -= (turnSpeed / 3);
+        bird.tilt(1, 0, turnSpeed);
+      } else if (turnSpeed < - 10 && camera.position.x <= 610) {
+        camera.position.x -= (turnSpeed / 3);
+        bird.tilt(0, 1, turnSpeed);
+      } else {
+        bird.tilt(0, 0, turnSpeed);
       }
 
-      if (turnSpeed < - 4 && camera.position.x <= 610) {
-        camera.position.x += - (turnSpeed);
-      }
+      
 
       if (!didFlex) {
         if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.6) {
