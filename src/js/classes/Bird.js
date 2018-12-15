@@ -68,7 +68,7 @@ class Bird {
         if (gltfGlobal.scene.rotation.z === 0) {
           gltfGlobal.scene.rotation.z === 0;
         } else {
-          gltfGlobal.scene.rotation.z += 0.03;
+          gltfGlobal.scene.rotation.z += 0.005;
         }
 
       }
@@ -76,7 +76,7 @@ class Bird {
         if (gltfGlobal.scene.rotation.z === 0) {
           gltfGlobal.scene.rotation.z === 0;
         } else {
-          gltfGlobal.scene.rotation.z -= 0.03;
+          gltfGlobal.scene.rotation.z -= 0.005;
         }
       }
     }
@@ -84,13 +84,13 @@ class Bird {
       if (gltfGlobal.scene.rotation.z <= - turnSpeed / 100) {
         gltfGlobal.scene.rotation.z = - turnSpeed / 100;
       } else {
-        gltfGlobal.scene.rotation.z -= 0.03;
+        gltfGlobal.scene.rotation.z -= 0.005;
       }
     } else if (right === 1) {
       if (gltfGlobal.scene.rotation.z >= - turnSpeed / 100) {
         gltfGlobal.scene.rotation.z =  - turnSpeed / 100;
       } else {
-        gltfGlobal.scene.rotation.z += 0.03;
+        gltfGlobal.scene.rotation.z += 0.005;
       }
     }
   }
