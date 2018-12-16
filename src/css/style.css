@@ -79,7 +79,7 @@ h1 {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: linear-gradient(180deg, #fcff9e 0%, #c67700 100%);
+  background: linear-gradient(180deg, #46a2bb 0%, #c08329 100%);
   z-index: 0;
 }
 
@@ -141,6 +141,39 @@ h1 {
   visibility: hidden;
   opacity: 0;
   transition: visibility 0s .5s, opacity .5s linear;
+}
+
+.tutorial_screen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 500px 5px black inset;
+  z-index: 10;
+  background-image: url(../assets/loadingbg.jpg);
+  background-size: cover;
+  font-size: 4rem;
+  color: white;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.tut_content {
+  margin-top: 10%;
+}
+
+.tutorial_play {
+  margin-top: 5rem;
+  border: .4rem solid white;
+  padding: 1rem 3rem;
+  font-size: 3rem;
+  display: inline-block;
+}
+
+.tutorial_play:hover {
+  background-color: white;
+  color: black;
+  cursor: pointer;
 }
 
 .menu_play {
@@ -257,7 +290,7 @@ h1 {
 
 .loading-screen {
   position: absolute;
-  z-index: 8;
+  z-index: 15;
   top: 0;
   left: 0;
   width: 100%;

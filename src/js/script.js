@@ -89,6 +89,8 @@ import Bird from './classes/Bird.js';
     addEnemies();
     addclouds();
     addExplosion();
+
+    tutorialScreen();
     //start de render loop
     loop();
   };
@@ -158,6 +160,14 @@ import Bird from './classes/Bird.js';
     document.getElementsByClassName(`.val`).innerHTML = fatigue.value;
   };
 
+  const tutorialScreen = () => {
+    const tutorialScreen = document.querySelector(`.tutorial_screen`);
+    const tutorialPlay = document.querySelector(`.tutorial_play`);
+
+    tutorialPlay.addEventListener(`click`, () => { tutorialScreen.className = `hide tutorial-screen`;});
+
+  };
+
   const menuPage = () => {
     const menuPage = document.getElementsByClassName(`menu_page`);
     const menuPlay = document.getElementsByClassName(`menu_play`);
@@ -187,7 +197,7 @@ import Bird from './classes/Bird.js';
     HEIGHT = window.innerHeight;
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xD59A38, 10, 2000);
+    scene.fog = new THREE.Fog(0xD59A38, 2, 3000);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 70;
@@ -424,7 +434,7 @@ import Bird from './classes/Bird.js';
 
   const addTrees = () => {
     const loader = new GLTFLoader(loadingManager);
-    loader.load(`https://yume.human-interactive.org/examples/forest/tree.glb`, gltf => {
+    loader.load(`assets/tree.glb`, gltf => {
       const tree = gltf.scene.children[ 0 ];
       for (let i = 0;i < 150;i ++) {
         const scale = 2 + (Math.random() * 1.5);
