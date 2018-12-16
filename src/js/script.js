@@ -217,7 +217,7 @@ import Bird from './classes/Bird.js';
     HEIGHT = window.innerHeight;
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x46a2bb, 1500, 2500);
+    scene.fog = new THREE.Fog(0xc08329, 1500, 2500);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 70;
@@ -680,21 +680,28 @@ import Bird from './classes/Bird.js';
               setTimeout(() => {
                 didFlex = false;
               }, 1500);
+            } else {
+              noStamina();
             }
 
           } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 20 && leftWrist.position.y > leftShoulder.position.y) &&
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20 && rightWrist.position.y > rightShoulder.position.y) && camera.position.y <= maxHeight) {
 
-            didFlex = true;
-            flexedDown = true;
-            bird.changePose(0, camera);
-            flexsound.play();
-
-            fatigue.value -= 5;
-
-            setTimeout(() => {
-              didFlex = false;
-            }, 1000);
+            if (fatigue.value > 1) {
+              didFlex = true;
+              flexedDown = true;
+              bird.changePose(0, camera);
+              flexsound.play();
+  
+              fatigue.value -= 5;
+  
+              setTimeout(() => {
+                didFlex = false;
+              }, 1000);
+            } else {
+              noStamina();
+            }
+            
           } else {
             flexedUp = false;
             flexedDown = false;
@@ -716,6 +723,14 @@ import Bird from './classes/Bird.js';
       }
 
     }
+  };
+
+  const noStamina = () => {
+    const tooCloseSection = document.getElementById(`too_close`);
+    const infoTxt = document.querySelector(`.te_dicht`);
+    tooCloseSection.className = `too_close display_page`;
+
+    infoTxt.innerHTML = `Flexbird is fatigued`;
   };
 
   const fly = () => {
