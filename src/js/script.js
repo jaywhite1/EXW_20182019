@@ -20,9 +20,12 @@ import Bird from './classes/Bird.js';
     WIDTH, HEIGHT,
     camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, particles1, particles2, speed, clock, delta, hemisphereLight, shadowLight, ambientLight, turnSpeed;
   let flexdistance = 0;
+  let pigkills = 0;
   let bird, video, net, playerPose;
   const pose = 1;
+  let moon;
   const trees = new Set();
+  const deadBodies = new Set();
   const enemies = new Set();
   const shakes = new Set();
   const EnemiesSpikes = new Set();
@@ -40,7 +43,6 @@ import Bird from './classes/Bird.js';
   let down = false;
   let tutPage = true;
   let left = true;
-  let fasterOvertime = 1;
   let right = false;
   let gameOverSoundState = true;
   let particles;
@@ -53,6 +55,7 @@ import Bird from './classes/Bird.js';
   let hitSomething = false;
   let gameOver = false;
   let spawnRate = 100;
+  let spawnRateSpikes = 300;
   let spawnRateCountdown = spawnRate;
   let currentPosition;
 
@@ -82,8 +85,12 @@ import Bird from './classes/Bird.js';
   const gameoverSound = new THREE.Audio(audioListener);
   audioLoader.load(`./assets/gameover.mp3`, function(buffer) {
     gameoverSound.setBuffer(buffer);
-    themeSound.setLoop(false);
     gameoverSound.setVolume(1);
+  });
+  const powerupsound = new THREE.Audio(audioListener);
+  audioLoader.load(`./assets/powerup.mp3`, function(buffer) {
+    powerupsound.setBuffer(buffer);
+    powerupsound.setVolume(0.5);
   });
   const flexsound = new THREE.Audio(audioListener);
   audioLoader.load(`./assets/flex.mp3`, function(buffer) {
@@ -113,9 +120,10 @@ import Bird from './classes/Bird.js';
     addGround();
     addParticles();
     addTrees();
+    addDeadBodies();
     addclouds();
     addExplosion();
-
+    addSun();
     tutorialScreen();
     
     //start de render loop
@@ -187,9 +195,18 @@ import Bird from './classes/Bird.js';
       tutorialScreen.className = `hide tutorial-screen`;
       tutPage = false;
     });
-
   };
-
+  const updateMoon = () => {
+    moon.position.set(0, 3200, camera.position.z - 3500);
+  };
+  const addSun = () => {
+    const textureLoader = new THREE.TextureLoader(loadingManager).load(`../assets/planet.png`);
+    const material = new THREE.SpriteMaterial({map: textureLoader, fog: true, opacity: 0.3});
+    moon = new THREE.Sprite(material);
+    moon.position.set(0, 2500, - 3500);
+    moon.scale.set(256 * 2, 256 * 2, 1);
+    scene.add(moon);
+  };
   const menuPage = () => {
     const menuPage = document.getElementsByClassName(`menu_page`);
     const menuPlay = document.getElementsByClassName(`menu_play`);
@@ -220,6 +237,7 @@ import Bird from './classes/Bird.js';
 
     scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x46a2bb, 0.0003);
+    scene.fog2 = new THREE.FogExp2(0x46a2bb, 0.0003);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 70;
@@ -453,6 +471,29 @@ import Bird from './classes/Bird.js';
 
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
+  const addDeadBodies = () => {
+    const loader = new GLTFLoader(loadingManager);
+    loader.load(`assets/dead.glb`, gltf => {
+      const dead = gltf.scene.children[ 0 ];
+      for (let i = 0;i < 5;i ++) {
+        const scale = 2 + (Math.random() * 1.5);
+        const mesh = dead.clone();
+        mesh.scale.set(scale * 2, scale * 3, scale * 3);
+        mesh.rotation.x = (Math.random() * 0.2) - 0.5;
+        mesh.rotation.y = Math.random() * Math.PI;
+        mesh.rotation.z = (Math.random() * 0.2) - 0.1;
+
+        mesh.position.x = (Math.random() * 2000) - 1000;
+        mesh.position.y = - 400;
+        mesh.position.z = (Math.random() * 4000) - 4000;
+        mesh.recieveShadows = true;
+        mesh.castShadows = true;
+
+        scene.add(mesh);
+        deadBodies.add(mesh);
+      }
+    });
+  };
 
   const addTrees = () => {
     const loader = new GLTFLoader(loadingManager);
@@ -462,7 +503,7 @@ import Bird from './classes/Bird.js';
         const scale = 2 + (Math.random() * 1.5);
         const mesh = tree.clone();
 
-        mesh.scale.set(scale * 1.5, scale * 2, scale * 1.5);
+        mesh.scale.set(scale * 2, scale * 3, scale * 3);
         mesh.rotation.x = (Math.random() * 0.2) - 0.1;
         mesh.rotation.y = Math.random() * Math.PI;
         mesh.rotation.z = (Math.random() * 0.2) - 0.1;
@@ -472,8 +513,8 @@ import Bird from './classes/Bird.js';
         mesh.position.z = (Math.random() * 4000) - 4000;
         mesh.recieveShadows = true;
         mesh.castShadows = true;
-        if (mesh.position.x < 1000 && mesh.position.x > 0) mesh.position.x += 1000;
-        if (mesh.position.x > - 1000 && mesh.position.x < 0) mesh.position.x -= 1000;
+        if (mesh.position.x < 1500 && mesh.position.x > 0) mesh.position.x += 1500;
+        if (mesh.position.x > - 1500 && mesh.position.x < 0) mesh.position.x -= 1500;
 
         scene.add(mesh);
         trees.add(mesh);
@@ -481,7 +522,7 @@ import Bird from './classes/Bird.js';
     });
   };
   const addGround = () => {
-    const plane = new THREE.PlaneBufferGeometry(5000, 20000, 9, 24);
+    const plane = new THREE.PlaneBufferGeometry(8000, 20000, 9, 24);
     const position = plane.attributes.position;
 
     for (let i = 0;i < position.count;i ++) {
@@ -514,6 +555,7 @@ import Bird from './classes/Bird.js';
       color: Colors.brown,
             // transparent: true,
             // opacity:.6,
+      fog: true,
       shading: THREE.FlatShading,
     }));
     ground1.recieveShadows = true;
@@ -530,6 +572,7 @@ import Bird from './classes/Bird.js';
       color: Colors.brown,
             // transparent: true,
             // opacity:.6,
+      fog: true,
       shading: THREE.FlatShading,
     }));
     ground2.recieveShadows = true;
@@ -583,19 +626,17 @@ import Bird from './classes/Bird.js';
     bird.animate(camera.position.y);
     doExplosionLogic();
     updateLights();
+    updateMoon();
     if (!gameStarted) {
       menuPage();
     } else {
       startGame();
-      fly(delta);
     }
     if (!gameOver) {
       if (!hitSomething) {
         checkCollisions();
       }
-      fasterOvertime += 0.0001;
       checkFlexes();
-      fly(delta);
 
       if (!tutPage) {
         checkFlexes();
@@ -605,8 +646,9 @@ import Bird from './classes/Bird.js';
 
         spawner();
         shakeSpawner();
+        spikeSpawner();
       }
-      
+
     } else {
       gameOverFunc();
     }
@@ -626,6 +668,22 @@ import Bird from './classes/Bird.js';
       spawnRateCountdown = spawnRate;
       //console.log(camera.position.z);
       addEnemies();
+
+    }
+  };
+
+  const spikeSpawner = () => {
+    spawnRateCountdown --;
+    //console.log(spawnRateCountdown);
+    if (spawnRateCountdown < 0) {
+      
+      if (spawnRateSpikes > 150) {
+        spawnRateSpikes -= 1;
+      }
+      
+      //console.log(spawnRate);
+      spawnRateCountdown = spawnRateSpikes;
+
       addEnemiesSpikes();
     }
   };
@@ -702,7 +760,7 @@ import Bird from './classes/Bird.js';
       if (turnSpeed > 10 && camera.position.x >= - 610) {
         camera.position.x -= (turnSpeed);
         bird.tilt(1, 0, turnSpeed);
-      } else if (turnSpeed < - 10 && camera.position.x <= 610) {
+      } else if (turnSpeed < - 10 && camera.position.x <= 820) {
         camera.position.x -= (turnSpeed);
         bird.tilt(0, 1, turnSpeed);
       } else {
@@ -739,16 +797,16 @@ import Bird from './classes/Bird.js';
               flexedDown = true;
               bird.changePose(0, camera);
               flexsound.play();
-  
+
               fatigue.value -= 5;
-  
+
               setTimeout(() => {
                 didFlex = false;
               }, 1000);
             } else {
               noStamina();
             }
-            
+
           } else {
             flexedUp = false;
             flexedDown = false;
@@ -782,20 +840,22 @@ import Bird from './classes/Bird.js';
 
   const fly = () => {
     if (!gameStarted || tooClose) {
-      speed = delta * 150; //50
+      speed = delta * 100; //50
     } else {
 
       if (fatigue.value >= 1) {
-        speed = delta * 400;
+        speed = delta * 200;
         camera.position.y -= Math.cos(camera.rotation.y) * spd / 7;
         camera.position.y -= Math.sin(camera.rotation.y) * spd / 7;
       } else {
-        speed = delta * 400;
+        speed = delta * 200;
         camera.position.y -= Math.cos(camera.rotation.y) * spd;
         camera.position.y -= Math.sin(camera.rotation.y) * spd;
       }
 
     }
+
+    speed = delta * 500; 
 
     //particles1.position.x = 80 * Math.cos(r * 2);
     //particles1.position.y = Math.sin(r * 2) + 100;
@@ -805,33 +865,37 @@ import Bird from './classes/Bird.js';
     particles2.position.y = 500;
     // respawn particles if necessary
 
-    particles1.position.z += speed * fasterOvertime;
-    particles2.position.z += speed * fasterOvertime;
+    particles1.position.z += speed;
+    particles2.position.z += speed;
     if (particles1.position.z - 100 > camera.position.z) particles1.position.z -= 3000;
     if (particles2.position.z - 100 > camera.position.z) particles2.position.z -= 3000;
     // respawn ground if necessary
 
-    ground1.position.z += speed * fasterOvertime;
-    ground2.position.z += speed * fasterOvertime;
+    ground1.position.z += speed;
+    ground2.position.z += speed;
 
     if (ground1.position.z - 10000 > camera.position.z) ground1.position.z -= 40000;
     if (ground2.position.z - 10000 > camera.position.z) ground2.position.z -= 40000;
     for (const tree of trees) {
-      tree.position.z += speed * fasterOvertime;
+      tree.position.z += speed;
       if (tree.position.z > camera.position.z) tree.position.z -= 4000;
     }
+    for (const dead of deadBodies) {
+      dead.position.z += speed;
+      if (dead.position.z > camera.position.z) dead.position.z -= 4000;
+    }
     for (const cloud of clouds) {
-      cloud.position.z += speed * fasterOvertime;
+      cloud.position.z += speed;
       if (cloud.position.z > camera.position.z) cloud.position.z -= 3000;
     }
     for (let shake of shakes) {
       shake.rotation.y -= 0.01;
-      shake.position.z += speed * fasterOvertime;
+      shake.position.z += speed;
       if (shake.position.z > camera.position.z) shake = undefined;
     }
     for (let shakebox of shakeCubes) {
       shakebox.rotation.y -= 0.01;
-      shakebox.position.z += speed * fasterOvertime;
+      shakebox.position.z += speed;
       if (shakebox.position.z > camera.position.z) shakebox = undefined;
     }
     for (let enemy of enemies) {
@@ -850,7 +914,7 @@ import Bird from './classes/Bird.js';
           up = true;
         }, 600);
       }
-      enemy.position.z += speed * fasterOvertime;
+      enemy.position.z += speed;
       if (enemy.position.z > camera.position.z) enemy = undefined;
     }
     for (let enemySpike of EnemiesSpikes) {
@@ -867,7 +931,7 @@ import Bird from './classes/Bird.js';
           left = true;
         }, 1500);
       }
-      enemySpike.position.z += speed * fasterOvertime;
+      enemySpike.position.z += speed;
       if (enemySpike.position.z > camera.position.z) enemySpike = undefined;
 
     }
@@ -887,7 +951,7 @@ import Bird from './classes/Bird.js';
           up = true;
         }, 600);
       }
-      cubebox.position.z += speed * fasterOvertime;
+      cubebox.position.z += speed;
       if (cubebox.position.z > camera.position.z) cubebox = undefined;
     }
     for (let cubebox of enemySpikeCubes) {
@@ -904,7 +968,7 @@ import Bird from './classes/Bird.js';
           left = true;
         }, 1500);
       }
-      cubebox.position.z += speed * fasterOvertime;
+      cubebox.position.z += speed;
       if (cubebox.position.z > camera.position.z) cubebox = undefined;
     }
   };
@@ -912,7 +976,6 @@ import Bird from './classes/Bird.js';
   const checkCollisions = () => {
     boxCube.position.set(camera.position.x, camera.position.y - 22, camera.position.z - 110);
     const originPoint = boxCube.position.clone();
-
     for (let vertexIndex = 0;vertexIndex < boxCube.geometry.vertices.length;vertexIndex ++)
     {
       const localVertex = boxCube.geometry.vertices[vertexIndex].clone();
@@ -924,12 +987,12 @@ import Bird from './classes/Bird.js';
       const collisionShakes = ray.intersectObjects(collidableMeshesShakes);
 
       if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
-        hitSomething = true;
 
-        if (flexedUp) {
+        if (flexedUp && !hitSomething) {
           fatigue.value = 100;
           deadSound.play();
-          explode();
+          pigkills += 1;
+          hitSomething = true;
         } else {
           hitSomething = true;
 
@@ -969,15 +1032,15 @@ import Bird from './classes/Bird.js';
         hitSomething = true;
 
         fatigue.value = 100;
-
+        powerupsound.play();
         const damageSection = document.getElementById(`refill`);
         damageSection.className = `too_close display_page_refill`;
 
         setTimeout(() => {
           damageSection.className = `display_page_refill_hidden`;
           hitSomething = false;
-        }, 500);
-        
+        }, 1000);
+
       }
 
     }
@@ -998,7 +1061,7 @@ import Bird from './classes/Bird.js';
         mesh.rotation.z = 0;
 
         mesh.position.x = (Math.random() * 1500) - 750;
-        mesh.position.y = (Math.random() * 1000) + 2500;
+        mesh.position.y = (Math.random() * 1000) + 3500;
         mesh.position.z = (Math.random() * 3000) - 1500;
         mesh.name = `enemy`;
         scene.add(mesh);
@@ -1040,7 +1103,7 @@ import Bird from './classes/Bird.js';
     const loader = new GLTFLoader(loadingManager);
     loader.load(`../assets/shake.glb`, gltf => {
       const shake = gltf.scene.children[ 0 ];
-      const scale = 50;
+      const scale = 80;
 
       const mesh = shake.clone();
       mesh.scale.set(scale, scale, scale);
@@ -1052,7 +1115,7 @@ import Bird from './classes/Bird.js';
       mesh.position.y = (Math.random() * 2000) + 100;
       mesh.position.z = currentPosition - 4000;
 
-      const cubeGeometry = new THREE.CubeGeometry(120, 200, 100, 1, 1, 1);
+      const cubeGeometry = new THREE.CubeGeometry(180, 220, 100, 1, 1, 1);
       const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
       shakeCube = new THREE.Mesh(cubeGeometry, wireMaterial);
       shakeCube.position.set(mesh.position.x, mesh.position.y + 10, mesh.position.z);
@@ -1139,8 +1202,8 @@ import Bird from './classes/Bird.js';
     gameOver = false;
     gameStarted = true;
     flexdistance = 0;
+    pigkills = 0;
     themeSound.setVolume(1);
-    fasterOvertime = 1;
     camera.position.y = 400;
     fatigue.value = 100;
 
@@ -1164,6 +1227,8 @@ import Bird from './classes/Bird.js';
 
     const flexdistancelabel = document.querySelector(`.score-value`);
     flexdistancelabel.innerHTML = Math.round(flexdistance);
+    const piglabel = document.querySelector(`.pig-value`);
+    piglabel.innerHTML = Math.round(pigkills);
   };
 
 
@@ -1172,7 +1237,7 @@ import Bird from './classes/Bird.js';
       camera.position.x -= spd * 2;
 
     }
-    if (input.right === 1 && camera.position.x <= 610) {
+    if (input.right === 1 && camera.position.x <= 820) {
       camera.position.x += spd * 2;
     }
 
