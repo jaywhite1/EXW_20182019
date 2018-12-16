@@ -1056,7 +1056,7 @@ import Bird from './classes/Bird.js';
     const gameOverScore = document.querySelector(`.gameover_score`);
     const playAgain = document.querySelector(`.play_again`);
     gameOverSection.className = `too_close display_page_dead`;
-    gameOverScore.innerHTML = Math.round(flexdistance);
+    gameOverScore.innerHTML = `${Math.round(flexdistance).toString()  } meter`;
     playAgain.addEventListener(`click`, restartGame);
 
     if (flexedDown) {
