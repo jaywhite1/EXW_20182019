@@ -51,7 +51,6 @@ import Bird from './classes/Bird.js';
   let tooClose = false;
   let gameStarted = false;
   let hitSomething = false;
-  let hitSomething2 = false;
   let gameOver = false;
   const videoWidth = 301;
   const videoHeight = 225;
@@ -579,8 +578,6 @@ import Bird from './classes/Bird.js';
     checkCamPosition();
     //mixer.update(0.01);
     bird.animate(camera.position.y);
-    checkPoses();
-    movePlayer();
     doExplosionLogic();
     updateLights();
     if (!gameStarted) {
@@ -590,15 +587,20 @@ import Bird from './classes/Bird.js';
       fly(delta);
     }
     if (!gameOver) {
-      if (!hitSomething && !hitSomething2 && !tutPage) {
+      if (!hitSomething) {
         checkCollisions();
       }
       fasterOvertime += 0.0001;
       checkFlexes();
       fly(delta);
 
-      checkPoses();
-      movePlayer();
+      if (!tutPage) {
+        checkFlexes();
+        fly(delta);
+        checkPoses();
+        movePlayer();
+      }
+      
     } else {
       gameOverFunc();
     }
@@ -659,10 +661,10 @@ import Bird from './classes/Bird.js';
       console.log(Math.round(turnSpeed));
 
       if (turnSpeed > 10 && camera.position.x >= - 610) {
-        camera.position.x -= (turnSpeed / 3);
+        camera.position.x -= (turnSpeed);
         bird.tilt(1, 0, turnSpeed);
       } else if (turnSpeed < - 10 && camera.position.x <= 610) {
-        camera.position.x -= (turnSpeed / 3);
+        camera.position.x -= (turnSpeed);
         bird.tilt(0, 1, turnSpeed);
       } else {
         bird.tilt(0, 0, turnSpeed);
@@ -678,7 +680,7 @@ import Bird from './classes/Bird.js';
 
             if (fatigue.value > 1) {
               dashsound.play();
-              fatigue.value -= 20;
+              fatigue.value -= 10;
               didFlex = true;
               flexedUp = true;
               bird.changePose(2, camera);
@@ -686,21 +688,28 @@ import Bird from './classes/Bird.js';
               setTimeout(() => {
                 didFlex = false;
               }, 1500);
+            } else {
+              noStamina();
             }
 
           } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 20 && leftWrist.position.y > leftShoulder.position.y) &&
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20 && rightWrist.position.y > rightShoulder.position.y) && camera.position.y <= maxHeight) {
 
-            didFlex = true;
-            flexedDown = true;
-            bird.changePose(0, camera);
-            flexsound.play();
-
-            fatigue.value -= 5;
-
-            setTimeout(() => {
-              didFlex = false;
-            }, 1000);
+            if (fatigue.value > 1) {
+              didFlex = true;
+              flexedDown = true;
+              bird.changePose(0, camera);
+              flexsound.play();
+  
+              fatigue.value -= 5;
+  
+              setTimeout(() => {
+                didFlex = false;
+              }, 1000);
+            } else {
+              noStamina();
+            }
+            
           } else {
             flexedUp = false;
             flexedDown = false;
@@ -724,9 +733,17 @@ import Bird from './classes/Bird.js';
     }
   };
 
+  const noStamina = () => {
+    const tooCloseSection = document.getElementById(`too_close`);
+    const infoTxt = document.querySelector(`.te_dicht`);
+    tooCloseSection.className = `too_close display_page`;
+
+    infoTxt.innerHTML = `Flexbird is fatigued`;
+  };
+
   const fly = () => {
     if (!gameStarted || tooClose) {
-      speed = delta * 50;
+      speed = delta * 500; //50
     } else {
 
       if (fatigue.value >= 1) {
@@ -865,17 +882,24 @@ import Bird from './classes/Bird.js';
       const ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
       const collisionResults = ray.intersectObjects(collidableMeshes);
       const collisionResults2 = ray.intersectObjects(collidableMeshesSpikes);
+      const collisionShakes = ray.intersectObjects(collidableMeshesShakes);
 
       if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
         hitSomething = true;
 
         if (flexedUp) {
           fatigue.value = 100;
+          deadSound.play();
+          explode();
         } else {
+          hitSomething = true;
 
           const damageSection = document.getElementById(`damage`);
           damageSection.className = `too_close display_page_damage`;
           fatigue.value -= 2;
+
+          deadSound.play();
+          explode();
 
           setTimeout(() => {
             damageSection.className = `display_page_damage_hidden`;
@@ -885,36 +909,39 @@ import Bird from './classes/Bird.js';
 
       }
 
-      if (hitSomething) {
-        fatigue.value -= 1;
-        deadSound.play();
-        explode();
-      }
 
       if (collisionResults2.length > 0 && collisionResults2[0].distance < directionVector.length()) {
-        hitSomething2 = true;
+        hitSomething = true;
 
-        if (flexedUp) {
-          fatigue.value = 100;
-        } else {
+        const damageSection = document.getElementById(`damage`);
+        damageSection.className = `too_close display_page_damage`;
+        fatigue.value -= 2;
 
-          const damageSection = document.getElementById(`damage`);
-          damageSection.className = `too_close display_page_damage`;
-          fatigue.value -= 2;
-
-          setTimeout(() => {
-            damageSection.className = `display_page_damage_hidden`;
-            hitSomething2 = false;
-          }, 1500);
-        }
-
-      }
-
-      if (hitSomething2) {
-        fatigue.value -= 1;
         spikeHit.play();
         explode();
+
+        setTimeout(() => {
+          damageSection.className = `display_page_damage_hidden`;
+          hitSomething = false;
+        }, 1000);
+
       }
+
+      if (collisionShakes.length > 0 && collisionShakes[0].distance < directionVector.length()) {
+        hitSomething = true;
+
+        fatigue.value = 100;
+
+        const damageSection = document.getElementById(`refill`);
+        damageSection.className = `too_close display_page_refill`;
+
+        setTimeout(() => {
+          damageSection.className = `display_page_refill_hidden`;
+          hitSomething = false;
+        }, 1000);
+        
+      }
+
     }
 
   };
@@ -997,6 +1024,7 @@ import Bird from './classes/Bird.js';
       shakes.add(mesh);
     });
   };
+
   const addEnemiesSpikes = () => {
     const loader = new GLTFLoader(loadingManager);
     loader.load(`../assets/platform.glb`, gltf => {
@@ -1024,8 +1052,8 @@ import Bird from './classes/Bird.js';
       EnemiesSpikes.add(mesh);
 
     });
-
   };
+
   const checkCamPosition = () => {
     if (camera.position.y <= - 250) {
       gameOverFunc();
@@ -1047,7 +1075,7 @@ import Bird from './classes/Bird.js';
     const gameOverScore = document.querySelector(`.gameover_score`);
     const playAgain = document.querySelector(`.play_again`);
     gameOverSection.className = `too_close display_page_dead`;
-    gameOverScore.innerHTML = Math.round(flexdistance);
+    gameOverScore.innerHTML = `${Math.round(flexdistance).toString()  } meter`;
     playAgain.addEventListener(`click`, restartGame);
 
     if (flexedDown) {
