@@ -181,7 +181,7 @@ import Bird from './classes/Bird.js';
     const tutorialScreen = document.querySelector(`.tutorial_screen`);
     const tutorialPlay = document.querySelector(`.tutorial_play`);
 
-    tutorialPlay.addEventListener(`click`, () => { 
+    tutorialPlay.addEventListener(`click`, () => {
       tutorialScreen.className = `hide tutorial-screen`;
       tutPage = false;
     });
@@ -217,7 +217,7 @@ import Bird from './classes/Bird.js';
     HEIGHT = window.innerHeight;
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xD59A38, 2, 3000);
+    scene.fog = new THREE.Fog(0x46a2bb, 1500, 2500);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 70;
@@ -225,7 +225,8 @@ import Bird from './classes/Bird.js';
           fieldOfView,
           aspectRatio,
           1,
-          4000
+          3000
+
       );
 
     camera.position.x = 100; //verte?
@@ -410,7 +411,7 @@ import Bird from './classes/Bird.js';
 
   const createLights = () => {
     hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, 1);
-    shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+    shadowLight = new THREE.DirectionalLight(0xffffff, 1);
     ambientLight = new THREE.AmbientLight(0xdc8874, .7);
 
         // Set the direction of the light
@@ -589,7 +590,7 @@ import Bird from './classes/Bird.js';
       }
       checkFlexes();
       fly(delta);
-      
+
       checkPoses();
       movePlayer();
     } else {
@@ -650,7 +651,7 @@ import Bird from './classes/Bird.js';
 
       turnSpeed = leftShoulder.position.y - rightShoulder.position.y;
       console.log(Math.round(turnSpeed));
-      
+
       if (turnSpeed > 10 && camera.position.x >= - 610) {
         camera.position.x -= (turnSpeed / 3);
         bird.tilt(1, 0, turnSpeed);
@@ -661,7 +662,7 @@ import Bird from './classes/Bird.js';
         bird.tilt(0, 0, turnSpeed);
       }
 
-      
+
 
       if (!didFlex) {
         if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.6) {
@@ -719,15 +720,15 @@ import Bird from './classes/Bird.js';
 
   const fly = () => {
     if (!gameStarted || tooClose) {
-      speed = delta * 200;
+      speed = delta * 50;
     } else {
 
       if (fatigue.value >= 1) {
-        speed = delta * 700;
+        speed = delta * 300;
         camera.position.y -= Math.cos(camera.rotation.y) * spd / 7;
         camera.position.y -= Math.sin(camera.rotation.y) * spd / 7;
       } else {
-        speed = delta * 700;
+        speed = delta * 300;
         camera.position.y -= Math.cos(camera.rotation.y) * spd;
         camera.position.y -= Math.sin(camera.rotation.y) * spd;
       }
