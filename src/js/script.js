@@ -33,6 +33,7 @@ import Bird from './classes/Bird.js';
   let flexedUp = false;
   let up = true;
   let down = false;
+  let tutPage = true;
   let particles;
   let particleGeometry;
   const particlecount = 20;
@@ -164,7 +165,10 @@ import Bird from './classes/Bird.js';
     const tutorialScreen = document.querySelector(`.tutorial_screen`);
     const tutorialPlay = document.querySelector(`.tutorial_play`);
 
-    tutorialPlay.addEventListener(`click`, () => { tutorialScreen.className = `hide tutorial-screen`;});
+    tutorialPlay.addEventListener(`click`, () => { 
+      tutorialScreen.className = `hide tutorial-screen`;
+      tutPage = false;
+    });
 
   };
 
@@ -567,7 +571,7 @@ import Bird from './classes/Bird.js';
       startGame();
     }
     if (!gameOver) {
-      if (!hitSomething) {
+      if (!hitSomething && !tutPage) {
         checkCollisions();
       }
       checkFlexes();

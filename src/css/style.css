@@ -158,12 +158,66 @@ h1 {
   font-weight: bold;
 }
 
+.tuts {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+
 .tut_content {
   margin-top: 10%;
+  padding-left: 5rem;
+  padding-right: 5rem;
+}
+
+.TutBottomLeft {
+  height: 13rem;
+  width: 60rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background-image: url(../assets/bigpoly.svg);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.TutBottomRight {
+  height: 13rem;
+  width: 60rem;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-image: url(../assets/bigpoly.svg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  transform: scaleX(-1);
+}
+
+.TutTopLeft {
+  height: 10rem;
+  width: 15rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-image: url(../assets/smallpoly.svg);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.TutTopRight {
+  height: 10rem;
+  width: 15rem;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-image: url(../assets/smallpoly.svg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  transform: scaleX(-1);
 }
 
 .tutorial_play {
-  margin-top: 5rem;
+  margin-top: 10rem;
   border: .4rem solid white;
   padding: 1rem 3rem;
   font-size: 3rem;
