@@ -52,6 +52,10 @@ import Bird from './classes/Bird.js';
   let gameStarted = false;
   let hitSomething = false;
   let gameOver = false;
+  let spawnRate = 100;
+  let spawnRateCountdown = spawnRate;
+  let currentPosition;
+
   const videoWidth = 301;
   const videoHeight = 225;
   const spd = 10;
@@ -113,9 +117,7 @@ import Bird from './classes/Bird.js';
     addExplosion();
 
     tutorialScreen();
-    addEnemies();
-    addShakes();
-    addEnemiesSpikes();
+    
     //start de render loop
     loop();
   };
@@ -231,9 +233,9 @@ import Bird from './classes/Bird.js';
 
     camera.position.x = 100; //verte?
     camera.position.z = 0; // l,r
-    camera.position.y = 400; //hoogte
+    camera.position.y = 1000; //hoogte
     scene.add(camera);
-    const cubeGeometry = new THREE.CubeGeometry(20, 50, 10, 1, 1, 1);
+    const cubeGeometry = new THREE.CubeGeometry(60, 50, 10, 1, 1, 1);
     const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
     boxCube = new THREE.Mesh(cubeGeometry, wireMaterial);
     boxCube.position.set(camera.position.x, camera.position.z, camera.position.y);
@@ -572,6 +574,7 @@ import Bird from './classes/Bird.js';
   };
 
   const loop = () => {
+    //console.log(hitSomething);
     requestAnimationFrame(loop);
     renderer.render(scene, camera);
     delta = clock.getDelta();
@@ -599,12 +602,46 @@ import Bird from './classes/Bird.js';
         fly(delta);
         checkPoses();
         movePlayer();
+
+        spawner();
+        shakeSpawner();
       }
       
     } else {
       gameOverFunc();
     }
 
+  };
+
+  const spawner = () => {
+    spawnRateCountdown --;
+    //console.log(spawnRateCountdown);
+    if (spawnRateCountdown < 0) {
+      
+      if (spawnRate > 30) {
+        spawnRate -= 2;
+      }
+      
+      //console.log(spawnRate);
+      spawnRateCountdown = spawnRate;
+      //console.log(camera.position.z);
+      addEnemies();
+      addEnemiesSpikes();
+    }
+  };
+
+  const shakeSpawner = () => {
+    spawnRateCountdown --;
+    //console.log(spawnRateCountdown);
+    if (spawnRateCountdown * 1.5 < 0) {
+      
+      if (spawnRate > 90) {
+        spawnRate -= 1;
+      }
+
+      spawnRateCountdown = spawnRate;
+      addShakes();
+    }
   };
 
   const checkFlexes = () => {
@@ -620,6 +657,8 @@ import Bird from './classes/Bird.js';
 
     if (flexedUp) {
       camera.position.z -= spd * 2;
+
+      currentPosition = camera.position.z;
 
       setTimeout(() => {
         flexedUp = false;
@@ -743,7 +782,7 @@ import Bird from './classes/Bird.js';
 
   const fly = () => {
     if (!gameStarted || tooClose) {
-      speed = delta * 500; //50
+      speed = delta * 150; //50
     } else {
 
       if (fatigue.value >= 1) {
@@ -785,17 +824,17 @@ import Bird from './classes/Bird.js';
       cloud.position.z += speed * fasterOvertime;
       if (cloud.position.z > camera.position.z) cloud.position.z -= 3000;
     }
-    for (const shake of shakes) {
+    for (let shake of shakes) {
       shake.rotation.y -= 0.01;
       shake.position.z += speed * fasterOvertime;
-      if (shake.position.z > camera.position.z) shake.position.z -= 3000;
+      if (shake.position.z > camera.position.z) shake = undefined;
     }
-    for (const shakebox of shakeCubes) {
+    for (let shakebox of shakeCubes) {
       shakebox.rotation.y -= 0.01;
       shakebox.position.z += speed * fasterOvertime;
-      if (shakebox.position.z > camera.position.z) shakebox.position.z -= 3000;
+      if (shakebox.position.z > camera.position.z) shakebox = undefined;
     }
-    for (const enemy of enemies) {
+    for (let enemy of enemies) {
       if (up) {
         enemy.position.y += 1.05;
         enemy.rotation.x -= 0.003;
@@ -812,9 +851,9 @@ import Bird from './classes/Bird.js';
         }, 600);
       }
       enemy.position.z += speed * fasterOvertime;
-      if (enemy.position.z > camera.position.z) enemy.position.z -= 3000;
+      if (enemy.position.z > camera.position.z) enemy = undefined;
     }
-    for (const enemySpike of EnemiesSpikes) {
+    for (let enemySpike of EnemiesSpikes) {
       if (left) {
         enemySpike.position.x += 3.05;
         setTimeout(() => {
@@ -829,10 +868,10 @@ import Bird from './classes/Bird.js';
         }, 1500);
       }
       enemySpike.position.z += speed * fasterOvertime;
-      if (enemySpike.position.z > camera.position.z) enemySpike.position.z -= 3000;
+      if (enemySpike.position.z > camera.position.z) enemySpike = undefined;
 
     }
-    for (const cubebox of enemyCubes) {
+    for (let cubebox of enemyCubes) {
       if (up) {
         cubebox.position.y += 1.05;
         cubebox.rotation.x -= 0.003;
@@ -849,9 +888,9 @@ import Bird from './classes/Bird.js';
         }, 600);
       }
       cubebox.position.z += speed * fasterOvertime;
-      if (cubebox.position.z > camera.position.z) cubebox.position.z -= 3000;
+      if (cubebox.position.z > camera.position.z) cubebox = undefined;
     }
-    for (const cubebox of enemySpikeCubes) {
+    for (let cubebox of enemySpikeCubes) {
       if (left) {
         cubebox.position.x += 3.05;
         setTimeout(() => {
@@ -866,7 +905,7 @@ import Bird from './classes/Bird.js';
         }, 1500);
       }
       cubebox.position.z += speed * fasterOvertime;
-      if (cubebox.position.z > camera.position.z) cubebox.position.z -= 3000;
+      if (cubebox.position.z > camera.position.z) cubebox = undefined;
     }
   };
 
@@ -904,11 +943,10 @@ import Bird from './classes/Bird.js';
           setTimeout(() => {
             damageSection.className = `display_page_damage_hidden`;
             hitSomething = false;
-          }, 1000);
+          }, 500);
         }
 
       }
-
 
       if (collisionResults2.length > 0 && collisionResults2[0].distance < directionVector.length()) {
         hitSomething = true;
@@ -923,7 +961,7 @@ import Bird from './classes/Bird.js';
         setTimeout(() => {
           damageSection.className = `display_page_damage_hidden`;
           hitSomething = false;
-        }, 1000);
+        }, 500);
 
       }
 
@@ -938,7 +976,7 @@ import Bird from './classes/Bird.js';
         setTimeout(() => {
           damageSection.className = `display_page_refill_hidden`;
           hitSomething = false;
-        }, 1000);
+        }, 500);
         
       }
 
@@ -983,7 +1021,7 @@ import Bird from './classes/Bird.js';
 
       mesh.position.x = (Math.random() * 1500) - 750;
       mesh.position.y = (Math.random() * 2000) + 100;
-      mesh.position.z = (Math.random() * 3000) - 1500;
+      mesh.position.z = currentPosition - 4000; 
 
       const cubeGeometry = new THREE.CubeGeometry(140, 400, 100, 1, 1, 1);
       const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
@@ -997,6 +1035,7 @@ import Bird from './classes/Bird.js';
 
     });
   };
+
   const addShakes = () => {
     const loader = new GLTFLoader(loadingManager);
     loader.load(`../assets/shake.glb`, gltf => {
@@ -1011,7 +1050,7 @@ import Bird from './classes/Bird.js';
 
       mesh.position.x = (Math.random() * 1500) - 750;
       mesh.position.y = (Math.random() * 2000) + 100;
-      mesh.position.z = (Math.random() * 3000) - 1500;
+      mesh.position.z = currentPosition - 4000;
 
       const cubeGeometry = new THREE.CubeGeometry(120, 200, 100, 1, 1, 1);
       const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
@@ -1039,7 +1078,7 @@ import Bird from './classes/Bird.js';
 
       mesh.position.x = (Math.random() * 1500) - 750;
       mesh.position.y = (Math.random() * 2000) + 100;
-      mesh.position.z = (Math.random() * 3000) - 1500;
+      mesh.position.z = currentPosition - 4000;
 
       const cubeGeometry = new THREE.CubeGeometry(390, 250, 100, 1, 1, 1);
       const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
@@ -1130,21 +1169,19 @@ import Bird from './classes/Bird.js';
 
   const movePlayer = () => {
     if (input.left === 1 && camera.position.x >= - 610) {
-      camera.position.x -= spd;
+      camera.position.x -= spd * 2;
 
     }
     if (input.right === 1 && camera.position.x <= 610) {
-      camera.position.x += spd;
+      camera.position.x += spd * 2;
     }
 
     if (input.up === 1) {
-      camera.position.y += spd;
-      camera.position.y += spd;
+      camera.position.y += spd * 2;
     }
 
     if (input.down === 1) {
-      camera.position.y -= Math.cos(camera.rotation.y) * spd;
-      camera.position.y -= Math.sin(camera.rotation.y) * spd;
+      camera.position.y -= spd * 2;
     }
   };
 
