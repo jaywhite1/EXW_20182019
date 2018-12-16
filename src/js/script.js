@@ -24,11 +24,14 @@ import Bird from './classes/Bird.js';
   const pose = 1;
   const trees = new Set();
   const enemies = new Set();
+  const shakes = new Set();
   const EnemiesSpikes = new Set();
   const collidableMeshes = [];
   const collidableMeshesSpikes = [];
+  const collidableMeshesShakes = [];
   const enemyCubes = [];
   const enemySpikeCubes = [];
+  const shakeCubes = [];
   const clouds = new Set();
   const maxHeight = 2500;
   let didFlex = false;
@@ -37,6 +40,7 @@ import Bird from './classes/Bird.js';
   let down = false;
   let left = true;
   let right = false;
+  let gameOverSoundState = true;
   let particles;
   let particleGeometry;
   const particlecount = 10;
@@ -55,6 +59,7 @@ import Bird from './classes/Bird.js';
   let boxCube;
   let enemyCube;
   let enemySpikeCube;
+  let shakeCube;
     //load audio, best wel nog aparte klasse voor maken
   const audioListener = new THREE.AudioListener();
   const themeSound = new THREE.Audio(audioListener);
@@ -68,6 +73,12 @@ import Bird from './classes/Bird.js';
   audioLoader.load(`./assets/spikeHit.mp3`, function(buffer) {
     spikeHit.setBuffer(buffer);
     spikeHit.setVolume(0.4);
+  });
+  const gameoverSound = new THREE.Audio(audioListener);
+  audioLoader.load(`./assets/gameover.mp3`, function(buffer) {
+    gameoverSound.setBuffer(buffer);
+    themeSound.setLoop(false);
+    gameoverSound.setVolume(1);
   });
   const flexsound = new THREE.Audio(audioListener);
   audioLoader.load(`./assets/flex.mp3`, function(buffer) {
@@ -100,6 +111,7 @@ import Bird from './classes/Bird.js';
     addclouds();
     addExplosion();
     addEnemies();
+    addShakes();
     addEnemiesSpikes();
     //start de render loop
     loop();
@@ -197,7 +209,9 @@ import Bird from './classes/Bird.js';
     fieldOfView = 70;
     camera = new THREE.PerspectiveCamera(
           fieldOfView,
-          aspectRatio
+          aspectRatio,
+          1,
+          4000
       );
 
     camera.position.x = 100; //verte?
@@ -553,13 +567,13 @@ import Bird from './classes/Bird.js';
       menuPage();
     } else {
       startGame();
+      fly(delta);
     }
     if (!gameOver) {
       if (!hitSomething && !hitSomething2) {
         checkCollisions();
       }
       checkFlexes();
-      fly(delta);
       bird.tilt(input.left, input.right);
       checkPoses();
       movePlayer();
@@ -727,6 +741,16 @@ import Bird from './classes/Bird.js';
       cloud.position.z += speed;
       if (cloud.position.z > camera.position.z) cloud.position.z -= 3000;
     }
+    for (const shake of shakes) {
+      shake.rotation.y -= 0.01;
+      shake.position.z += speed;
+      if (shake.position.z > camera.position.z) shake.position.z -= 3000;
+    }
+    for (const shakebox of shakeCubes) {
+      shakebox.rotation.y -= 0.01;
+      shakebox.position.z += speed;
+      if (shakebox.position.z > camera.position.z) shakebox.position.z -= 3000;
+    }
     for (const enemy of enemies) {
       if (up) {
         enemy.position.y += 1.05;
@@ -745,7 +769,6 @@ import Bird from './classes/Bird.js';
       }
       enemy.position.z += speed;
       if (enemy.position.z > camera.position.z) enemy.position.z -= 3000;
-
     }
     for (const enemySpike of EnemiesSpikes) {
       if (left) {
@@ -783,7 +806,6 @@ import Bird from './classes/Bird.js';
       }
       cubebox.position.z += speed;
       if (cubebox.position.z > camera.position.z) cubebox.position.z -= 3000;
-
     }
     for (const cubebox of enemySpikeCubes) {
       if (left) {
@@ -801,7 +823,6 @@ import Bird from './classes/Bird.js';
       }
       cubebox.position.z += speed;
       if (cubebox.position.z > camera.position.z) cubebox.position.z -= 3000;
-
     }
   };
 
@@ -921,7 +942,33 @@ import Bird from './classes/Bird.js';
       enemies.add(mesh);
 
     });
+  };
+  const addShakes = () => {
+    const loader = new GLTFLoader(loadingManager);
+    loader.load(`../assets/shake.glb`, gltf => {
+      const shake = gltf.scene.children[ 0 ];
+      const scale = 50;
 
+      const mesh = shake.clone();
+      mesh.scale.set(scale, scale, scale);
+      mesh.rotation.x = 0;
+      mesh.rotation.y = 0;
+      mesh.rotation.z = 0;
+
+      mesh.position.x = (Math.random() * 1500) - 750;
+      mesh.position.y = (Math.random() * 2000) + 100;
+      mesh.position.z = (Math.random() * 3000) - 1500;
+
+      const cubeGeometry = new THREE.CubeGeometry(120, 200, 100, 1, 1, 1);
+      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
+      shakeCube = new THREE.Mesh(cubeGeometry, wireMaterial);
+      shakeCube.position.set(mesh.position.x, mesh.position.y + 10, mesh.position.z);
+      scene.add(shakeCube);
+      collidableMeshesShakes.push(shakeCube);
+      shakeCubes.push(shakeCube);
+      scene.add(mesh);
+      shakes.add(mesh);
+    });
   };
   const addEnemiesSpikes = () => {
     const loader = new GLTFLoader(loadingManager);
@@ -962,7 +1009,13 @@ import Bird from './classes/Bird.js';
     gameStarted = false;
     gameOver = true;
     fatigue.value = 0;
-    themeSound.setVolume(.3);
+    themeSound.setVolume(.1);
+    if (!gameoverSound.isPlaying) {
+      if (gameOverSoundState) {
+        gameoverSound.play();
+        gameOverSoundState = false;
+      }
+    }
     const gameOverSection = document.getElementById(`gameover`);
     const gameOverScore = document.querySelector(`.gameover_score`);
     const playAgain = document.querySelector(`.play_again`);
@@ -978,13 +1031,17 @@ import Bird from './classes/Bird.js';
 
   const startGame = () => {
     gameStarted = true;
-    themeSound.play();
+    if (!themeSound.isPlaying) {
+      themeSound.play();
+    }
+
     // movePlayer();
     updateDistance();
     showValue();
   };
 
   const restartGame = () => {
+    gameOverSoundState = true;
     gameOver = false;
     gameStarted = true;
     flexdistance = 0;
