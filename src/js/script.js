@@ -40,6 +40,7 @@ import Bird from './classes/Bird.js';
   let down = false;
   let tutPage = true;
   let left = true;
+  let fasterOvertime = 1;
   let right = false;
   let gameOverSoundState = true;
   let particles;
@@ -216,7 +217,7 @@ import Bird from './classes/Bird.js';
     HEIGHT = window.innerHeight;
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xc08329, 1500, 2500);
+    scene.fog = new THREE.FogExp2(0x46a2bb, 0.0003);
       //create the camera
     aspectRatio = WIDTH / HEIGHT;
     fieldOfView = 70;
@@ -224,7 +225,7 @@ import Bird from './classes/Bird.js';
           fieldOfView,
           aspectRatio,
           1,
-          3000
+          5000
 
       );
 
@@ -249,7 +250,7 @@ import Bird from './classes/Bird.js';
 
     renderer.setSize(WIDTH, HEIGHT);
     renderer.shadowMap.enabled = true;
-
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container = document.getElementsByClassName(`world`);
     container[0].appendChild(renderer.domElement);
   };
@@ -407,15 +408,16 @@ import Bird from './classes/Bird.js';
     }
     particleGeometry.verticesNeedUpdate = true;
   };
+  const updateLights = () => {
+    shadowLight.position.set(camera.position.x, camera.position.y, camera.position.z + 7000);
+  };
 
   const createLights = () => {
     hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, 1);
-    shadowLight = new THREE.DirectionalLight(0xffffff, 1);
-    ambientLight = new THREE.AmbientLight(0xdc8874, .7);
+    shadowLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    ambientLight = new THREE.AmbientLight(0xdc8874, 0.8);
 
         // Set the direction of the light
-    shadowLight.position.set(150, 150, 450);
-
         // Allow shadow casting
     shadowLight.castShadow = true;
 
@@ -465,11 +467,11 @@ import Bird from './classes/Bird.js';
 
         mesh.position.x = (Math.random() * 4000) - 2000;
         mesh.position.y = - 400;
-        mesh.position.z = (Math.random() * 3000) - 3000;
-
-
-        if (mesh.position.x < 700 && mesh.position.x > 0) mesh.position.x += 700;
-        if (mesh.position.x > - 700 && mesh.position.x < 0) mesh.position.x -= 700;
+        mesh.position.z = (Math.random() * 4000) - 4000;
+        mesh.recieveShadows = true;
+        mesh.castShadows = true;
+        if (mesh.position.x < 1000 && mesh.position.x > 0) mesh.position.x += 1000;
+        if (mesh.position.x > - 1000 && mesh.position.x < 0) mesh.position.x -= 1000;
 
         scene.add(mesh);
         trees.add(mesh);
@@ -477,7 +479,7 @@ import Bird from './classes/Bird.js';
     });
   };
   const addGround = () => {
-    const plane = new THREE.PlaneBufferGeometry(3000, 20000, 9, 24);
+    const plane = new THREE.PlaneBufferGeometry(5000, 20000, 9, 24);
     const position = plane.attributes.position;
 
     for (let i = 0;i < position.count;i ++) {
@@ -512,7 +514,8 @@ import Bird from './classes/Bird.js';
             // opacity:.6,
       shading: THREE.FlatShading,
     }));
-
+    ground1.recieveShadows = true;
+    ground1.castShadow = true;
     ground1.rotation.x = - Math.PI / 2;
     ground1.position.y = - 300;
     ground1.position.z = - 10000;
@@ -527,6 +530,8 @@ import Bird from './classes/Bird.js';
             // opacity:.6,
       shading: THREE.FlatShading,
     }));
+    ground2.recieveShadows = true;
+    ground2.castShadow = true;
     ground2.rotation.x = - Math.PI / 2;
     ground2.position.y = - 300;
     ground2.position.z = - 30000;
@@ -574,7 +579,7 @@ import Bird from './classes/Bird.js';
     //mixer.update(0.01);
     bird.animate(camera.position.y);
     doExplosionLogic();
-
+    updateLights();
     if (!gameStarted) {
       menuPage();
     } else {
@@ -585,6 +590,9 @@ import Bird from './classes/Bird.js';
       if (!hitSomething) {
         checkCollisions();
       }
+      fasterOvertime += 0.0001;
+      checkFlexes();
+      fly(delta);
 
       if (!tutPage) {
         checkFlexes();
@@ -739,11 +747,11 @@ import Bird from './classes/Bird.js';
     } else {
 
       if (fatigue.value >= 1) {
-        speed = delta * 300;
+        speed = delta * 400;
         camera.position.y -= Math.cos(camera.rotation.y) * spd / 7;
         camera.position.y -= Math.sin(camera.rotation.y) * spd / 7;
       } else {
-        speed = delta * 300;
+        speed = delta * 400;
         camera.position.y -= Math.cos(camera.rotation.y) * spd;
         camera.position.y -= Math.sin(camera.rotation.y) * spd;
       }
@@ -758,33 +766,33 @@ import Bird from './classes/Bird.js';
     particles2.position.y = 500;
     // respawn particles if necessary
 
-    particles1.position.z += speed;
-    particles2.position.z += speed;
+    particles1.position.z += speed * fasterOvertime;
+    particles2.position.z += speed * fasterOvertime;
     if (particles1.position.z - 100 > camera.position.z) particles1.position.z -= 3000;
     if (particles2.position.z - 100 > camera.position.z) particles2.position.z -= 3000;
     // respawn ground if necessary
 
-    ground1.position.z += speed;
-    ground2.position.z += speed;
+    ground1.position.z += speed * fasterOvertime;
+    ground2.position.z += speed * fasterOvertime;
 
     if (ground1.position.z - 10000 > camera.position.z) ground1.position.z -= 40000;
     if (ground2.position.z - 10000 > camera.position.z) ground2.position.z -= 40000;
     for (const tree of trees) {
-      tree.position.z += speed;
-      if (tree.position.z > camera.position.z) tree.position.z -= 3000;
+      tree.position.z += speed * fasterOvertime;
+      if (tree.position.z > camera.position.z) tree.position.z -= 4000;
     }
     for (const cloud of clouds) {
-      cloud.position.z += speed;
+      cloud.position.z += speed * fasterOvertime;
       if (cloud.position.z > camera.position.z) cloud.position.z -= 3000;
     }
     for (const shake of shakes) {
       shake.rotation.y -= 0.01;
-      shake.position.z += speed;
+      shake.position.z += speed * fasterOvertime;
       if (shake.position.z > camera.position.z) shake.position.z -= 3000;
     }
     for (const shakebox of shakeCubes) {
       shakebox.rotation.y -= 0.01;
-      shakebox.position.z += speed;
+      shakebox.position.z += speed * fasterOvertime;
       if (shakebox.position.z > camera.position.z) shakebox.position.z -= 3000;
     }
     for (const enemy of enemies) {
@@ -803,7 +811,7 @@ import Bird from './classes/Bird.js';
           up = true;
         }, 600);
       }
-      enemy.position.z += speed;
+      enemy.position.z += speed * fasterOvertime;
       if (enemy.position.z > camera.position.z) enemy.position.z -= 3000;
     }
     for (const enemySpike of EnemiesSpikes) {
@@ -820,7 +828,7 @@ import Bird from './classes/Bird.js';
           left = true;
         }, 1500);
       }
-      enemySpike.position.z += speed;
+      enemySpike.position.z += speed * fasterOvertime;
       if (enemySpike.position.z > camera.position.z) enemySpike.position.z -= 3000;
 
     }
@@ -840,7 +848,7 @@ import Bird from './classes/Bird.js';
           up = true;
         }, 600);
       }
-      cubebox.position.z += speed;
+      cubebox.position.z += speed * fasterOvertime;
       if (cubebox.position.z > camera.position.z) cubebox.position.z -= 3000;
     }
     for (const cubebox of enemySpikeCubes) {
@@ -857,7 +865,7 @@ import Bird from './classes/Bird.js';
           left = true;
         }, 1500);
       }
-      cubebox.position.z += speed;
+      cubebox.position.z += speed * fasterOvertime;
       if (cubebox.position.z > camera.position.z) cubebox.position.z -= 3000;
     }
   };
@@ -1093,7 +1101,7 @@ import Bird from './classes/Bird.js';
     gameStarted = true;
     flexdistance = 0;
     themeSound.setVolume(1);
-
+    fasterOvertime = 1;
     camera.position.y = 400;
     fatigue.value = 100;
 
