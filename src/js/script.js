@@ -574,8 +574,6 @@ import Bird from './classes/Bird.js';
     checkCamPosition();
     //mixer.update(0.01);
     bird.animate(camera.position.y);
-    checkPoses();
-    movePlayer();
     doExplosionLogic();
 
     if (!gameStarted) {
@@ -585,14 +583,17 @@ import Bird from './classes/Bird.js';
       fly(delta);
     }
     if (!gameOver) {
-      if (!hitSomething && !hitSomething2 && !tutPage) {
+      if (!hitSomething && !hitSomething2) {
         checkCollisions();
       }
-      checkFlexes();
-      fly(delta);
 
-      checkPoses();
-      movePlayer();
+      if (!tutPage) {
+        checkFlexes();
+        fly(delta);
+        checkPoses();
+        movePlayer();
+      }
+      
     } else {
       gameOverFunc();
     }
