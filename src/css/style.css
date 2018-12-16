@@ -79,7 +79,7 @@ h1 {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: linear-gradient(180deg, #46a2bb, #c08329);
+  background: linear-gradient(180deg, #c08329, #46a2bb 70%);
   z-index: 0;
 }
 
@@ -102,6 +102,23 @@ h1 {
   height: 25rem;
   background-size: cover;
   background-repeat: no-repeat;
+}
+
+.deadpigs {
+  position: absolute;
+  z-index: 6;
+  font-size: 2.5rem;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 10rem;
+  margin-right: 2rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: #fc0 1px 0 10px;
+  width: 20rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
 }
 
 .display_page {
