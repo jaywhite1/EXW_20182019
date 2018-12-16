@@ -26,6 +26,7 @@ import Bird from './classes/Bird.js';
   const enemies = new Set();
   const EnemiesSpikes = new Set();
   const collidableMeshes = [];
+  const collidableMeshesSpikes = [];
   const enemyCubes = [];
   const enemySpikeCubes = [];
   const clouds = new Set();
@@ -38,12 +39,13 @@ import Bird from './classes/Bird.js';
   let right = false;
   let particles;
   let particleGeometry;
-  const particlecount = 20;
+  const particlecount = 10;
   let explosionPower = 1.06;
   let flexedDown = false;
   let tooClose = false;
   let gameStarted = false;
   let hitSomething = false;
+  let hitSomething2 = false;
   let gameOver = false;
   const videoWidth = 301;
   const videoHeight = 225;
@@ -61,6 +63,11 @@ import Bird from './classes/Bird.js';
     themeSound.setBuffer(buffer);
     themeSound.setLoop(true);
     themeSound.setVolume(0.6);
+  });
+  const spikeHit = new THREE.Audio(audioListener);
+  audioLoader.load(`./assets/spikeHit.mp3`, function(buffer) {
+    spikeHit.setBuffer(buffer);
+    spikeHit.setVolume(0.4);
   });
   const flexsound = new THREE.Audio(audioListener);
   audioLoader.load(`./assets/flex.mp3`, function(buffer) {
@@ -262,7 +269,6 @@ import Bird from './classes/Bird.js';
 
     try {
       video = await loadVideo();
-      //console.log(video);
     } catch (e) {
       const info = document.getElementById(`info`);
       info.textContent = `this browser does not support video capture,` +
@@ -301,8 +307,6 @@ import Bird from './classes/Bird.js';
         flipHorizontal,
         outputStride);
       poses.push(playerPose);
-
-      //console.log(playerPose);
 
       // Show a pose (i.e. a person) only if probability more than
       const minPoseConfidence = 0.4;
@@ -435,10 +439,9 @@ import Bird from './classes/Bird.js';
         mesh.position.y = - 400;
         mesh.position.z = (Math.random() * 3000) - 3000;
 
-        // keep the way through the forest free of trees
 
-        if (mesh.position.x < 570 && mesh.position.x > 0) mesh.position.x += 570;
-        if (mesh.position.x > - 570 && mesh.position.x < 0) mesh.position.x -= 570;
+        if (mesh.position.x < 700 && mesh.position.x > 0) mesh.position.x += 700;
+        if (mesh.position.x > - 700 && mesh.position.x < 0) mesh.position.x -= 700;
 
         scene.add(mesh);
         trees.add(mesh);
@@ -546,14 +549,13 @@ import Bird from './classes/Bird.js';
     movePlayer();
     doExplosionLogic();
 
-    //console.log(camera.position.x);
     if (!gameStarted) {
       menuPage();
     } else {
       startGame();
     }
     if (!gameOver) {
-      if (!hitSomething) {
+      if (!hitSomething && !hitSomething2) {
         checkCollisions();
       }
       checkFlexes();
@@ -814,6 +816,7 @@ import Bird from './classes/Bird.js';
       const directionVector = globalVertex.sub(boxCube.position);
       const ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
       const collisionResults = ray.intersectObjects(collidableMeshes);
+      const collisionResults2 = ray.intersectObjects(collidableMeshesSpikes);
 
       if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
         hitSomething = true;
@@ -839,7 +842,33 @@ import Bird from './classes/Bird.js';
         deadSound.play();
         explode();
       }
+
+      if (collisionResults2.length > 0 && collisionResults2[0].distance < directionVector.length()) {
+        hitSomething2 = true;
+
+        if (flexedUp) {
+          fatigue.value = 100;
+        } else {
+
+          const damageSection = document.getElementById(`damage`);
+          damageSection.className = `too_close display_page_damage`;
+          fatigue.value -= 2;
+
+          setTimeout(() => {
+            damageSection.className = `display_page_damage_hidden`;
+            hitSomething2 = false;
+          }, 1500);
+        }
+
+      }
+
+      if (hitSomething2) {
+        fatigue.value -= 1;
+        spikeHit.play();
+        explode();
+      }
     }
+
   };
 
   const addclouds = () => {
@@ -915,7 +944,7 @@ import Bird from './classes/Bird.js';
       enemySpikeCube = new THREE.Mesh(cubeGeometry, wireMaterial);
       enemySpikeCube.position.set(mesh.position.x, mesh.position.y + 100, mesh.position.z);
       scene.add(enemySpikeCube);
-      collidableMeshes.push(enemySpikeCube);
+      collidableMeshesSpikes.push(enemySpikeCube);
       enemySpikeCubes.push(enemySpikeCube);
       scene.add(mesh);
       EnemiesSpikes.add(mesh);

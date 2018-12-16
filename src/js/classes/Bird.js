@@ -29,7 +29,6 @@ class Bird {
   }
 
   poses(pose, scene, gltf) {
-    console.log(pose);
 
     scene.add(gltf.scene);
     gltf.scene.position.set(0, - 18, - 50);
@@ -57,13 +56,10 @@ class Bird {
       currentAnimation = 1;
     }, 400);
 
-    console.log(currentAnimation);
-
   }
 
   tilt(left, right) {
     if (left === 0 && right === 0) {
-      console.log(gltfGlobal.scene.rotation.z);
       if (gltfGlobal.scene.rotation.z < 0) {
         if (gltfGlobal.scene.rotation.z === 0) {
           gltfGlobal.scene.rotation.z === 0;
