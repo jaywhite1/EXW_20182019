@@ -707,8 +707,12 @@ import Bird from './classes/Bird.js';
   };
 
   const shakeSpawner = () => {
-    spawnRateShakeCountdown --;
-    //console.log(spawnRateCountdown);
+    if (tooClose) {
+      spawnRateShakeCountdown - (1 / 8);
+    } else {
+      spawnRateShakeCountdown --;
+    }
+  
     if (spawnRateShakeCountdown < 0) {
 
       spawnRateShakeCountdown = spawnRateShakes;
