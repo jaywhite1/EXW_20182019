@@ -16,6 +16,8 @@ import Bird from './classes/Bird.js';
     loadingScreen.addEventListener(`transitionend`, onTransitionEnd);
   });
 
+  const loadingManager2 = new THREE.LoadingManager(() => {});
+
   let scene,
     WIDTH, HEIGHT,
     camera, fieldOfView, aspectRatio, renderer, container, ground1, ground2, particles1, particles2, speed, clock, delta, hemisphereLight, shadowLight, ambientLight, turnSpeed;
@@ -55,8 +57,11 @@ import Bird from './classes/Bird.js';
   let hitSomething = false;
   let gameOver = false;
   let spawnRate = 100;
-  let spawnRateSpikes = 300;
+  let spawnRateSpikes = 400;
+  const spawnRateShakes = 300;
   let spawnRateCountdown = spawnRate;
+  let spawnRateSpikesCountdown = spawnRateSpikes;
+  let spawnRateShakeCountdown = spawnRateShakes;
   let currentPosition;
 
   const videoWidth = 301;
@@ -251,7 +256,7 @@ import Bird from './classes/Bird.js';
 
     camera.position.x = 100; //verte?
     camera.position.z = 0; // l,r
-    camera.position.y = 1000; //hoogte
+    camera.position.y = 1500; //hoogte
     scene.add(camera);
     const cubeGeometry = new THREE.CubeGeometry(60, 50, 10, 1, 1, 1);
     const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
@@ -651,17 +656,24 @@ import Bird from './classes/Bird.js';
 
     } else {
       gameOverFunc();
+      checkPoses();
     }
 
   };
 
   const spawner = () => {
-    spawnRateCountdown --;
-    //console.log(spawnRateCountdown);
+    
+
+    if (tooClose) {
+      spawnRateCountdown - (1 / 8);
+    } else {
+      spawnRateCountdown --;
+    }
+    
     if (spawnRateCountdown < 0) {
       
       if (spawnRate > 30) {
-        spawnRate -= 2;
+        spawnRate -= 1;
       }
       
       //console.log(spawnRate);
@@ -673,31 +685,33 @@ import Bird from './classes/Bird.js';
   };
 
   const spikeSpawner = () => {
-    spawnRateCountdown --;
-    //console.log(spawnRateCountdown);
-    if (spawnRateCountdown < 0) {
+
+    if (tooClose) {
+      spawnRateSpikesCountdown - (1 / 8);
+    } else {
+      spawnRateSpikesCountdown --;
+    }
+
+    if (spawnRateSpikesCountdown < 0) {
       
       if (spawnRateSpikes > 150) {
+
         spawnRateSpikes -= 1;
       }
       
       //console.log(spawnRate);
-      spawnRateCountdown = spawnRateSpikes;
+      spawnRateSpikesCountdown = spawnRateSpikes;
 
       addEnemiesSpikes();
     }
   };
 
   const shakeSpawner = () => {
-    spawnRateCountdown --;
+    spawnRateShakeCountdown --;
     //console.log(spawnRateCountdown);
-    if (spawnRateCountdown * 1.5 < 0) {
-      
-      if (spawnRate > 90) {
-        spawnRate -= 1;
-      }
+    if (spawnRateShakeCountdown < 0) {
 
-      spawnRateCountdown = spawnRate;
+      spawnRateShakeCountdown = spawnRateShakes;
       addShakes();
     }
   };
@@ -734,17 +748,6 @@ import Bird from './classes/Bird.js';
     const leftWrist = playerPose.keypoints[10];
     const rightWrist = playerPose.keypoints[9];
 
-    // let leftShoulderOld;
-
-    // setTimeout(() => {
-    //   leftShoulderOld = leftShoulder;
-    //   console.log(leftShoulderOld.position.x.toFixed(0), leftShoulder.position.x.toFixed(0));
-    // }, 1000);
-
-
-    //console.log(`diff: ${  rightShoulder.position.x.toFixed(0) - leftShoulder.position.x.toFixed(0)}`);
-    //console.log(playerPose.keypoints);
-
     if (rightShoulder.position.x - leftShoulder.position.x <= 100) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
@@ -755,7 +758,7 @@ import Bird from './classes/Bird.js';
       tooCloseSection.className = `hide`;
 
       turnSpeed = leftShoulder.position.y - rightShoulder.position.y;
-      console.log(Math.round(turnSpeed));
+      //console.log(Math.round(turnSpeed));
 
       if (turnSpeed > 10 && camera.position.x >= - 610) {
         camera.position.x -= (turnSpeed);
@@ -775,7 +778,7 @@ import Bird from './classes/Bird.js';
           if ((leftElbow.position.y < leftShoulder.position.y && leftWrist.position.y < leftElbow.position.y && (leftWrist.position.x > leftElbow.position.x + 20)) &&
           (rightElbow.position.y < rightShoulder.position.y && rightWrist.position.y < rightElbow.position.y && (rightWrist.position.x < rightElbow.position.x - 20))) {
 
-            if (fatigue.value > 1) {
+            if (fatigue.value > 1 && !gameOver) {
               dashsound.play();
               fatigue.value -= 10;
               didFlex = true;
@@ -790,23 +793,30 @@ import Bird from './classes/Bird.js';
             }
 
           } else if ((leftElbow.position.y > leftShoulder.position.y && leftWrist.position.x > leftElbow.position.x + 20 && leftWrist.position.y > leftShoulder.position.y) &&
-          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20 && rightWrist.position.y > rightShoulder.position.y) && camera.position.y <= maxHeight) {
+          (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20 && rightWrist.position.y > rightShoulder.position.y)) {
 
-            if (fatigue.value > 1) {
-              didFlex = true;
-              flexedDown = true;
-              bird.changePose(0, camera);
-              flexsound.play();
-
-              fatigue.value -= 5;
-
-              setTimeout(() => {
-                didFlex = false;
-              }, 1000);
-            } else {
-              noStamina();
+            if (gameStarted || gameOver) {
+              if (fatigue.value > 1) {
+                if (camera.position.y <= maxHeight) {
+                  didFlex = true;
+                  flexedDown = true;
+                  bird.changePose(0, camera);
+                  flexsound.play();
+    
+                  fatigue.value -= 5;
+    
+                  setTimeout(() => {
+                    didFlex = false;
+                  }, 1000);
+                } else {
+                  tooHigh();
+                }
+                
+              } else {
+                noStamina();
+              }
             }
-
+            
           } else {
             flexedUp = false;
             flexedDown = false;
@@ -820,7 +830,10 @@ import Bird from './classes/Bird.js';
 
       if (gameStarted && !gameOver) {
         const tooCloseSection = document.getElementById(`too_close`);
+        const infoTxt = document.querySelector(`.te_dicht`);
         tooCloseSection.className = `too_close display_page`;
+
+        infoTxt.innerHTML = `You're too close`;
 
         themeSound.setVolume(.3);
         input.left = 0;
@@ -838,15 +851,23 @@ import Bird from './classes/Bird.js';
     infoTxt.innerHTML = `Flexbird is fatigued`;
   };
 
+  const tooHigh = () => {
+    const tooCloseSection = document.getElementById(`too_close`);
+    const infoTxt = document.querySelector(`.te_dicht`);
+    tooCloseSection.className = `too_close display_page`;
+
+    infoTxt.innerHTML = `Flexbird can't fly higher`;
+  };
+
   const fly = () => {
     if (!gameStarted || tooClose) {
       speed = delta * 100; //50
     } else {
 
       if (fatigue.value >= 1) {
-        speed = delta * 200;
-        camera.position.y -= Math.cos(camera.rotation.y) * spd / 7;
-        camera.position.y -= Math.sin(camera.rotation.y) * spd / 7;
+        speed = delta * 800;
+        camera.position.y -= Math.cos(camera.rotation.y) * spd / 2;
+        camera.position.y -= Math.sin(camera.rotation.y) * spd / 2;
       } else {
         speed = delta * 200;
         camera.position.y -= Math.cos(camera.rotation.y) * spd;
@@ -854,8 +875,6 @@ import Bird from './classes/Bird.js';
       }
 
     }
-
-    speed = delta * 500; 
 
     //particles1.position.x = 80 * Math.cos(r * 2);
     //particles1.position.y = Math.sin(r * 2) + 100;
@@ -878,11 +897,11 @@ import Bird from './classes/Bird.js';
     if (ground2.position.z - 10000 > camera.position.z) ground2.position.z -= 40000;
     for (const tree of trees) {
       tree.position.z += speed;
-      if (tree.position.z > camera.position.z) tree.position.z -= 4000;
+      if (tree.position.z > camera.position.z) tree.position.z -= 5000;
     }
     for (const dead of deadBodies) {
       dead.position.z += speed;
-      if (dead.position.z > camera.position.z) dead.position.z -= 4000;
+      if (dead.position.z > camera.position.z) dead.position.z -= 5000;
     }
     for (const cloud of clouds) {
       cloud.position.z += speed;
@@ -993,6 +1012,13 @@ import Bird from './classes/Bird.js';
           deadSound.play();
           pigkills += 1;
           hitSomething = true;
+          const refillSection = document.getElementById(`refill`);
+          refillSection.className = `too_close display_page_refill`;
+
+          setTimeout(() => {
+            refillSection.className = `display_page_refill_hidden`;
+            hitSomething = false;
+          }, 500);
         } else {
           hitSomething = true;
 
@@ -1071,10 +1097,10 @@ import Bird from './classes/Bird.js';
   };
 
   const addEnemies = () => {
-    const loader = new GLTFLoader(loadingManager);
+    const loader = new GLTFLoader(loadingManager2);
     loader.load(`../assets/enemy.glb`, gltf => {
       const enemy = gltf.scene.children[ 0 ];
-      const scale = 80;
+      const scale = 150;
 
       const mesh = enemy.clone();
       mesh.scale.set(scale, scale, scale);
@@ -1086,10 +1112,10 @@ import Bird from './classes/Bird.js';
       mesh.position.y = (Math.random() * 2000) + 100;
       mesh.position.z = currentPosition - 4000; 
 
-      const cubeGeometry = new THREE.CubeGeometry(140, 400, 100, 1, 1, 1);
+      const cubeGeometry = new THREE.CubeGeometry(300, 700, 300, 1, 1, 1);
       const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
       enemyCube = new THREE.Mesh(cubeGeometry, wireMaterial);
-      enemyCube.position.set(mesh.position.x, mesh.position.y + 200, mesh.position.z);
+      enemyCube.position.set(mesh.position.x, mesh.position.y + 400, mesh.position.z);
       scene.add(enemyCube);
       collidableMeshes.push(enemyCube);
       enemyCubes.push(enemyCube);
@@ -1100,10 +1126,10 @@ import Bird from './classes/Bird.js';
   };
 
   const addShakes = () => {
-    const loader = new GLTFLoader(loadingManager);
+    const loader = new GLTFLoader(loadingManager2);
     loader.load(`../assets/shake.glb`, gltf => {
       const shake = gltf.scene.children[ 0 ];
-      const scale = 80;
+      const scale = 120;
 
       const mesh = shake.clone();
       mesh.scale.set(scale, scale, scale);
@@ -1115,7 +1141,7 @@ import Bird from './classes/Bird.js';
       mesh.position.y = (Math.random() * 2000) + 100;
       mesh.position.z = currentPosition - 4000;
 
-      const cubeGeometry = new THREE.CubeGeometry(180, 220, 100, 1, 1, 1);
+      const cubeGeometry = new THREE.CubeGeometry(230, 290, 230, 1, 1, 1);
       const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
       shakeCube = new THREE.Mesh(cubeGeometry, wireMaterial);
       shakeCube.position.set(mesh.position.x, mesh.position.y + 10, mesh.position.z);
@@ -1128,7 +1154,7 @@ import Bird from './classes/Bird.js';
   };
 
   const addEnemiesSpikes = () => {
-    const loader = new GLTFLoader(loadingManager);
+    const loader = new GLTFLoader(loadingManager2);
     loader.load(`../assets/platform.glb`, gltf => {
       const enemy = gltf.scene.children[ 0 ];
       const scale = 80;
@@ -1204,7 +1230,7 @@ import Bird from './classes/Bird.js';
     flexdistance = 0;
     pigkills = 0;
     themeSound.setVolume(1);
-    camera.position.y = 400;
+    camera.position.y = 1500;
     fatigue.value = 100;
 
     const gameOverSection = document.getElementById(`gameover`);
