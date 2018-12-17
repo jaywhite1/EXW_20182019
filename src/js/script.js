@@ -56,9 +56,9 @@ import Bird from './classes/Bird.js';
   let gameStarted = false;
   let hitSomething = false;
   let gameOver = false;
-  let spawnRate = 100;
-  let spawnRateSpikes = 400;
-  const spawnRateShakes = 300;
+  let spawnRate = 90;
+  let spawnRateSpikes = 200;
+  const spawnRateShakes = 250;
   let spawnRateCountdown = spawnRate;
   let spawnRateSpikesCountdown = spawnRateSpikes;
   let spawnRateShakeCountdown = spawnRateShakes;
@@ -259,9 +259,10 @@ import Bird from './classes/Bird.js';
     camera.position.y = 1500; //hoogte
     scene.add(camera);
     const cubeGeometry = new THREE.CubeGeometry(60, 50, 10, 1, 1, 1);
-    const wireMaterial = new THREE.MeshBasicMaterial({wireframe: false, overdraw: true});
+    const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
     boxCube = new THREE.Mesh(cubeGeometry, wireMaterial);
     boxCube.position.set(camera.position.x, camera.position.z, camera.position.y);
+    boxCube.visible = false;
     scene.add(boxCube);
 
       //create renderer
@@ -673,7 +674,7 @@ import Bird from './classes/Bird.js';
     if (spawnRateCountdown < 0) {
       
       if (spawnRate > 30) {
-        spawnRate -= 1;
+        spawnRate -= 3;
       }
       
       //console.log(spawnRate);
@@ -696,7 +697,7 @@ import Bird from './classes/Bird.js';
       
       if (spawnRateSpikes > 150) {
 
-        spawnRateSpikes -= 1;
+        spawnRateSpikes -= 3;
       }
       
       //console.log(spawnRate);
@@ -752,9 +753,9 @@ import Bird from './classes/Bird.js';
     const leftWrist = playerPose.keypoints[10];
     const rightWrist = playerPose.keypoints[9];
 
-    //console.log(rightShoulder.position.x - leftShoulder.position.x);
+    console.log(rightShoulder.position.x - leftShoulder.position.x);
 
-    if (rightShoulder.position.x - leftShoulder.position.x <= 90) { //|| rightShoulder.x <= 40
+    if (rightShoulder.position.x - leftShoulder.position.x <= 100) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
       // if (rightShoulder.position.x - leftShoulder.position.x <= 70) {
@@ -771,17 +772,18 @@ import Bird from './classes/Bird.js';
       turnSpeed = leftShoulder.position.y - rightShoulder.position.y;
       //console.log(Math.round(turnSpeed));
 
-      if (turnSpeed > 10 && camera.position.x >= - 610) {
-        camera.position.x -= (turnSpeed * 2);
-        bird.tilt(1, 0, turnSpeed);
-      } else if (turnSpeed < - 10 && camera.position.x <= 820) {
-        camera.position.x -= (turnSpeed * 2);
-        bird.tilt(0, 1, turnSpeed);
-      } else {
-        bird.tilt(0, 0, turnSpeed);
+      if (!gameOver) {
+        if (turnSpeed > 6 && camera.position.x >= - 610) {
+          camera.position.x -= (turnSpeed * 1.3);
+          bird.tilt(1, 0, turnSpeed);
+        } else if (turnSpeed < - 6 && camera.position.x <= 820) {
+          camera.position.x -= (turnSpeed * 1.3);
+          bird.tilt(0, 1, turnSpeed);
+        } else {
+          bird.tilt(0, 0, turnSpeed);
+        }
       }
-
-
+  
 
       if (!didFlex) {
         if ((leftElbow.score && leftWrist.score || rightElbow.score && rightWrist.score) >= 0.6) {
@@ -1132,9 +1134,10 @@ import Bird from './classes/Bird.js';
       mesh.position.z = currentPosition - 4000; 
 
       const cubeGeometry = new THREE.CubeGeometry(300, 700, 300, 1, 1, 1);
-      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: false, overdraw: true});
+      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
       enemyCube = new THREE.Mesh(cubeGeometry, wireMaterial);
       enemyCube.position.set(mesh.position.x, mesh.position.y + 400, mesh.position.z);
+      enemyCube.material.visible = false;
       scene.add(enemyCube);
       collidableMeshes.push(enemyCube);
       enemyCubes.push(enemyCube);
@@ -1161,9 +1164,10 @@ import Bird from './classes/Bird.js';
       mesh.position.z = currentPosition - 4000;
 
       const cubeGeometry = new THREE.CubeGeometry(230, 290, 230, 1, 1, 1);
-      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true, overdraw: true});
+      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
       shakeCube = new THREE.Mesh(cubeGeometry, wireMaterial);
       shakeCube.position.set(mesh.position.x, mesh.position.y + 10, mesh.position.z);
+      shakeCube.material.visible = false;
       scene.add(shakeCube);
       collidableMeshesShakes.push(shakeCube);
       shakeCubes.push(shakeCube);
@@ -1189,9 +1193,10 @@ import Bird from './classes/Bird.js';
       mesh.position.z = currentPosition - 4000;
 
       const cubeGeometry = new THREE.CubeGeometry(390, 250, 100, 1, 1, 1);
-      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true, overdraw: true});
+      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
       enemySpikeCube = new THREE.Mesh(cubeGeometry, wireMaterial);
       enemySpikeCube.position.set(mesh.position.x, mesh.position.y + 100, mesh.position.z);
+      enemySpikeCube.material.visible = false;
       scene.add(enemySpikeCube);
       collidableMeshesSpikes.push(enemySpikeCube);
       enemySpikeCubes.push(enemySpikeCube);

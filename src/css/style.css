@@ -220,6 +220,11 @@ h1 {
   background-repeat: no-repeat;
 }
 
+.chrome {
+  margin-top: 5rem;
+  font-size: 1.5rem;
+}
+
 .TutBottomRight {
   height: 13rem;
   width: 60rem;
