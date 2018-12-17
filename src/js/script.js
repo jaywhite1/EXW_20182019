@@ -259,7 +259,7 @@ import Bird from './classes/Bird.js';
     camera.position.y = 1500; //hoogte
     scene.add(camera);
     const cubeGeometry = new THREE.CubeGeometry(60, 50, 10, 1, 1, 1);
-    const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
+    const wireMaterial = new THREE.MeshBasicMaterial({wireframe: false, overdraw: true});
     boxCube = new THREE.Mesh(cubeGeometry, wireMaterial);
     boxCube.position.set(camera.position.x, camera.position.z, camera.position.y);
     scene.add(boxCube);
@@ -752,9 +752,16 @@ import Bird from './classes/Bird.js';
     const leftWrist = playerPose.keypoints[10];
     const rightWrist = playerPose.keypoints[9];
 
-    if (rightShoulder.position.x - leftShoulder.position.x <= 100) { //|| rightShoulder.x <= 40
+    //console.log(rightShoulder.position.x - leftShoulder.position.x);
+
+    if (rightShoulder.position.x - leftShoulder.position.x <= 90) { //|| rightShoulder.x <= 40
       //console.log(`ok`);
 
+      // if (rightShoulder.position.x - leftShoulder.position.x <= 70) {
+      //   tooFar();
+      //   console.log(`toofar`);
+      // }
+      
       const tooCloseSection = document.getElementById(`too_close`);
       tooClose = false;
       themeSound.setVolume(1);
@@ -765,10 +772,10 @@ import Bird from './classes/Bird.js';
       //console.log(Math.round(turnSpeed));
 
       if (turnSpeed > 10 && camera.position.x >= - 610) {
-        camera.position.x -= (turnSpeed);
+        camera.position.x -= (turnSpeed * 2);
         bird.tilt(1, 0, turnSpeed);
       } else if (turnSpeed < - 10 && camera.position.x <= 820) {
-        camera.position.x -= (turnSpeed);
+        camera.position.x -= (turnSpeed * 2);
         bird.tilt(0, 1, turnSpeed);
       } else {
         bird.tilt(0, 0, turnSpeed);
@@ -800,7 +807,7 @@ import Bird from './classes/Bird.js';
           (rightElbow.position.y >= rightShoulder.position.y && rightWrist.position.x < rightElbow.position.x - 20 && rightWrist.position.y > rightShoulder.position.y)) {
 
             if (gameStarted || gameOver) {
-              if (fatigue.value > 1) {
+              if (fatigue.value > 1 || gameOver) {
                 if (camera.position.y <= maxHeight) {
                   didFlex = true;
                   flexedDown = true;
@@ -811,7 +818,7 @@ import Bird from './classes/Bird.js';
     
                   setTimeout(() => {
                     didFlex = false;
-                  }, 1000);
+                  }, 1200);
                 } else {
                   tooHigh();
                 }
@@ -862,6 +869,14 @@ import Bird from './classes/Bird.js';
 
     infoTxt.innerHTML = `Flexbird can't fly higher`;
   };
+
+  // const tooFar = () => {
+  //   const tooCloseSection = document.getElementById(`too_close`);
+  //   const infoTxt = document.querySelector(`.te_dicht`);
+  //   tooCloseSection.className = `too_close display_page`;
+
+  //   infoTxt.innerHTML = `You're too far away!`;
+  // };
 
   const fly = () => {
     if (!gameStarted || tooClose) {
@@ -1117,7 +1132,7 @@ import Bird from './classes/Bird.js';
       mesh.position.z = currentPosition - 4000; 
 
       const cubeGeometry = new THREE.CubeGeometry(300, 700, 300, 1, 1, 1);
-      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
+      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: false, overdraw: true});
       enemyCube = new THREE.Mesh(cubeGeometry, wireMaterial);
       enemyCube.position.set(mesh.position.x, mesh.position.y + 400, mesh.position.z);
       scene.add(enemyCube);
@@ -1146,7 +1161,7 @@ import Bird from './classes/Bird.js';
       mesh.position.z = currentPosition - 4000;
 
       const cubeGeometry = new THREE.CubeGeometry(230, 290, 230, 1, 1, 1);
-      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
+      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true, overdraw: true});
       shakeCube = new THREE.Mesh(cubeGeometry, wireMaterial);
       shakeCube.position.set(mesh.position.x, mesh.position.y + 10, mesh.position.z);
       scene.add(shakeCube);
@@ -1174,7 +1189,7 @@ import Bird from './classes/Bird.js';
       mesh.position.z = currentPosition - 4000;
 
       const cubeGeometry = new THREE.CubeGeometry(390, 250, 100, 1, 1, 1);
-      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
+      const wireMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true, overdraw: true});
       enemySpikeCube = new THREE.Mesh(cubeGeometry, wireMaterial);
       enemySpikeCube.position.set(mesh.position.x, mesh.position.y + 100, mesh.position.z);
       scene.add(enemySpikeCube);

@@ -80,16 +80,16 @@ class Bird {
       }
     }
     if (left === 1) {
-      if (gltfGlobal.scene.rotation.z <= - turnSpeed / 100) {
-        gltfGlobal.scene.rotation.z = - turnSpeed / 100;
+      if (gltfGlobal.scene.rotation.z <= - turnSpeed / 90) {
+        gltfGlobal.scene.rotation.z = - turnSpeed / 90;
       } else {
-        gltfGlobal.scene.rotation.z -= 0.005;
+        gltfGlobal.scene.rotation.z -= 0.009;
       }
     } else if (right === 1) {
-      if (gltfGlobal.scene.rotation.z >= - turnSpeed / 100) {
-        gltfGlobal.scene.rotation.z =  - turnSpeed / 100;
+      if (gltfGlobal.scene.rotation.z >= - turnSpeed / 90) {
+        gltfGlobal.scene.rotation.z =  - turnSpeed / 90;
       } else {
-        gltfGlobal.scene.rotation.z += 0.005;
+        gltfGlobal.scene.rotation.z += 0.009;
       }
     }
   }
